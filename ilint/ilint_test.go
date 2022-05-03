@@ -43,16 +43,35 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
-type badReader struct {
+type mockWriter struct {
+	mock.Mock
+}
+
+func (w *mockWriter) Write(b []byte) (int, error) {
+	args := w.Mock.Called(b)
+	return args.Int(0), args.Error(1)
+}
+
+type mockReader struct {
+	mock.Mock
 	reader io.Reader
 }
 
-func (reader *badReader) Read(b []byte) (int, error) {
-	n, err := reader.reader.Read(b)
+func (r *mockReader) Read(b []byte) (int, error) {
+	args := r.Mock.Called(len(b))
+	// Priorize error first
+	err := args.Error(1)
 	if err != nil {
-		return len(b) - 1, nil
+		return 0, err
+	}
+	// Limit the number of bytes read.
+	expN := args.Int(0)
+	n, err := r.reader.Read(b[:expN])
+	if err != nil {
+		return n, nil
 	} else {
 		return n, err
 	}
@@ -204,6 +223,19 @@ func TestEncodeToWriter(t *testing.T) {
 		assert.Equal(t, s.EncodedSize, n)
 		assert.Equal(t, s.Encoded, w.Bytes())
 	}
+
+	// Failed due to error
+	for _, s := range sample_values {
+		mw := mockWriter{}
+		mw.On("Write", mock.Anything).Return(s.EncodedSize-1, nil)
+		_, err := EncodeToWriter(s.Value, &mw)
+		assert.ErrorIs(t, err, io.ErrShortWrite)
+
+		mw = mockWriter{}
+		mw.On("Write", mock.Anything).Return(s.EncodedSize, io.ErrShortWrite)
+		_, err = EncodeToWriter(s.Value, &mw)
+		assert.ErrorIs(t, err, io.ErrShortWrite)
+	}
 }
 
 func TestEncodedSizeFromHeader(t *testing.T) {
@@ -283,17 +315,43 @@ func TestDecodeFromReader(t *testing.T) {
 	assert.ErrorIs(t, io.EOF, err)
 
 	_, _, err = DecodeFromReader(bytes.NewReader([]byte{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}))
-	assert.ErrorIs(t, io.EOF, err)
+	assert.ErrorIs(t, io.ErrUnexpectedEOF, err)
 
 	_, _, err = DecodeFromReader(
 		bytes.NewReader([]byte{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x08}))
 	assert.ErrorIs(t, ErrOverflow, err)
 
-	_, _, err = DecodeFromReader(&badReader{bytes.NewReader([]byte{})})
-	assert.ErrorIs(t, io.EOF, err)
+	sample := []byte{0xFF, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}
+	// Fail with an error on the first call
+	mr := mockReader{reader: bytes.NewReader(sample)}
+	mr.On("Read", int(1)).Return(0, io.EOF)
+	v, n, err := DecodeFromReader(&mr)
+	assert.ErrorIs(t, err, io.EOF)
+	assert.Equal(t, uint64(0), v)
+	assert.Equal(t, 0, n)
 
-	_, _, err = DecodeFromReader(&badReader{bytes.NewReader([]byte{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF})})
-	assert.ErrorIs(t, io.EOF, err)
+	mr = mockReader{reader: bytes.NewReader(sample)}
+	mr.On("Read", int(1)).Return(0, nil)
+	v, n, err = DecodeFromReader(&mr)
+	assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
+	assert.Equal(t, uint64(0), v)
+	assert.Equal(t, 0, n)
+
+	mr = mockReader{reader: bytes.NewReader(sample)}
+	mr.On("Read", int(1)).Return(1, nil)
+	mr.On("Read", int(len(sample)-1)).Return(0, io.EOF)
+	v, n, err = DecodeFromReader(&mr)
+	assert.ErrorIs(t, err, io.EOF)
+	assert.Equal(t, uint64(0), v)
+	assert.Equal(t, 0, n)
+
+	mr = mockReader{reader: bytes.NewReader(sample)}
+	mr.On("Read", int(1)).Return(1, nil)
+	mr.On("Read", int(len(sample)-1)).Return(len(sample)-2, nil)
+	v, n, err = DecodeFromReader(&mr)
+	assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
+	assert.Equal(t, uint64(0), v)
+	assert.Equal(t, len(sample)-1, n)
 }
 
 func TestEncodeDecode(t *testing.T) {

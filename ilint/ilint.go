@@ -116,12 +116,19 @@ func Encode(v uint64, b []byte) []byte {
 }
 
 /*
-Encodes the current value and write the result into a Writer.
+Encodes the current value and write the result into a Writer. It fails if the
+value cannot be fully written to the writer.
 */
 func EncodeToWriter(v uint64, writer io.Writer) (int, error) {
 	var bytes [9]byte
 	ret := Encode(v, bytes[0:0])
-	return writer.Write(ret)
+	if n, err := writer.Write(ret); err != nil {
+		return n, err
+	} else if n != len(ret) {
+		return n, io.ErrShortWrite
+	} else {
+		return n, nil
+	}
 }
 
 /*
@@ -187,7 +194,7 @@ func DecodeFromReader(reader io.Reader) (uint64, int, error) {
 		return 0, 0, err
 	}
 	if n != 1 {
-		return 0, 0, io.EOF
+		return 0, 0, io.ErrUnexpectedEOF
 	}
 	size := EncodedSizeFromHeader(bytes[0])
 	if size == 1 {
@@ -199,7 +206,7 @@ func DecodeFromReader(reader io.Reader) (uint64, int, error) {
 		return 0, 0, err
 	}
 	if n != size {
-		return 0, n + 1, io.EOF
+		return 0, n + 1, io.ErrUnexpectedEOF
 	}
 	v, err := DecodeBody(bytes[:size])
 	if err != nil {
