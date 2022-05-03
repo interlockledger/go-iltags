@@ -46,8 +46,8 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"math"
 	"unicode/utf8"
-	"unsafe"
 
 	"github.com/interlockledger/go-iltags/ilint"
 )
@@ -74,20 +74,18 @@ func WriteBytes(writer io.Writer, b []byte) error {
 Writes a boolean value.
 */
 func WriteBool(writer io.Writer, v bool) error {
-	buff := make([]byte, 1)
+	b := uint8(0)
 	if v {
-		buff[0] = 1
-	} else {
-		buff[0] = 0
+		b = 1
 	}
-	return WriteBytes(writer, buff[:])
+	return WriteUInt8(writer, b)
 }
 
 /*
 Writes an unsigned 8-bit value.
 */
 func WriteUInt8(writer io.Writer, v uint8) error {
-	buff := make([]byte, 1)
+	var buff [1]byte
 	buff[0] = v
 	return WriteBytes(writer, buff[:])
 }
@@ -96,7 +94,7 @@ func WriteUInt8(writer io.Writer, v uint8) error {
 Writes a signed 8-bit value.
 */
 func WriteInt8(writer io.Writer, v int8) error {
-	buff := make([]byte, 1)
+	var buff [1]byte
 	buff[0] = uint8(v)
 	return WriteBytes(writer, buff[:])
 }
@@ -105,8 +103,8 @@ func WriteInt8(writer io.Writer, v int8) error {
 Writes an unsigned 16-bit value.
 */
 func WriteUInt16(writer io.Writer, v uint16) error {
-	buff := make([]byte, 2)
-	binary.BigEndian.PutUint16(buff, v)
+	var buff [2]byte
+	binary.BigEndian.PutUint16(buff[:], v)
 	return WriteBytes(writer, buff[:])
 }
 
@@ -115,15 +113,14 @@ Writes an signed 16-bit value.
 */
 func WriteInt16(writer io.Writer, v int16) error {
 	return WriteUInt16(writer, uint16(v))
-
 }
 
 /*
 Writes an unsigned 32-bit value.
 */
 func WriteUInt32(writer io.Writer, v uint32) error {
-	buff := make([]byte, 4)
-	binary.BigEndian.PutUint32(buff, v)
+	var buff [4]byte
+	binary.BigEndian.PutUint32(buff[:], v)
 	return WriteBytes(writer, buff[:])
 }
 
@@ -138,8 +135,8 @@ func WriteInt32(writer io.Writer, v int32) error {
 Writes an unsigned 64-bit value.
 */
 func WriteUInt64(writer io.Writer, v uint64) error {
-	buff := make([]byte, 8)
-	binary.BigEndian.PutUint64(buff, v)
+	var buff [8]byte
+	binary.BigEndian.PutUint64(buff[:], v)
 	return WriteBytes(writer, buff[:])
 }
 
@@ -154,16 +151,16 @@ func WriteInt64(writer io.Writer, v int64) error {
 Writes a 32-bit floating point.
 */
 func WriteFloat32(writer io.Writer, v float32) error {
-	p := (*uint32)(unsafe.Pointer(&v))
-	return WriteUInt32(writer, *p)
+	i := math.Float32bits(v)
+	return WriteUInt32(writer, i)
 }
 
 /*
 Writes a 64-bit floating point.
 */
 func WriteFloat64(writer io.Writer, v float64) error {
-	p := (*uint64)(unsafe.Pointer(&v))
-	return WriteUInt64(writer, *p)
+	i := math.Float64bits(v)
+	return WriteUInt64(writer, i)
 }
 
 /*
@@ -210,11 +207,10 @@ func ReadBytes(reader io.Reader, b []byte) error {
 Reads a boolean value.
 */
 func ReadBool(reader io.Reader) (bool, error) {
-	buff := make([]byte, 1)
-	if err := ReadBytes(reader, buff); err != nil {
+	if v, err := ReadUInt8(reader); err != nil {
 		return false, err
 	} else {
-		switch buff[0] {
+		switch v {
 		case 0:
 			return false, nil
 		case 1:
@@ -229,8 +225,8 @@ func ReadBool(reader io.Reader) (bool, error) {
 Reads an unsigned 8-bit value.
 */
 func ReadUInt8(reader io.Reader) (uint8, error) {
-	buff := make([]byte, 1)
-	if err := ReadBytes(reader, buff); err != nil {
+	var buff [1]byte
+	if err := ReadBytes(reader, buff[:]); err != nil {
 		return 0, err
 	} else {
 		return buff[0], nil
@@ -252,11 +248,11 @@ func ReadInt8(reader io.Reader) (int8, error) {
 Reads an unsigned 16-bit value.
 */
 func ReadUInt16(reader io.Reader) (uint16, error) {
-	buff := make([]byte, 2)
-	if err := ReadBytes(reader, buff); err != nil {
+	var buff [2]byte
+	if err := ReadBytes(reader, buff[:]); err != nil {
 		return 0, err
 	} else {
-		return binary.BigEndian.Uint16(buff), nil
+		return binary.BigEndian.Uint16(buff[:]), nil
 	}
 }
 
@@ -275,11 +271,11 @@ func ReadInt16(reader io.Reader) (int16, error) {
 Reads an unsigned 32-bit value.
 */
 func ReadUInt32(reader io.Reader) (uint32, error) {
-	buff := make([]byte, 4)
-	if err := ReadBytes(reader, buff); err != nil {
+	var buff [4]byte
+	if err := ReadBytes(reader, buff[:]); err != nil {
 		return 0, err
 	} else {
-		return binary.BigEndian.Uint32(buff), nil
+		return binary.BigEndian.Uint32(buff[:]), nil
 	}
 }
 
@@ -298,11 +294,11 @@ func ReadInt32(reader io.Reader) (int32, error) {
 Reads an unsigned 64-bit value.
 */
 func ReadUInt64(reader io.Reader) (uint64, error) {
-	buff := make([]byte, 8)
-	if err := ReadBytes(reader, buff); err != nil {
+	var buff [8]byte
+	if err := ReadBytes(reader, buff[:]); err != nil {
 		return 0, err
 	} else {
-		return binary.BigEndian.Uint64(buff), nil
+		return binary.BigEndian.Uint64(buff[:]), nil
 	}
 }
 
@@ -324,8 +320,7 @@ func ReadFloat32(reader io.Reader) (float32, error) {
 	if v, err := ReadUInt32(reader); err != nil {
 		return 0, err
 	} else {
-		f := (*float32)(unsafe.Pointer(&v))
-		return *f, nil
+		return math.Float32frombits(v), nil
 	}
 }
 
@@ -336,8 +331,7 @@ func ReadFloat64(reader io.Reader) (float64, error) {
 	if v, err := ReadUInt64(reader); err != nil {
 		return 0, err
 	} else {
-		f := (*float64)(unsafe.Pointer(&v))
-		return *f, nil
+		return math.Float64frombits(v), nil
 	}
 }
 
