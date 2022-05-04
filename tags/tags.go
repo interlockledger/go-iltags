@@ -52,7 +52,7 @@ type ILTag interface {
 }
 
 // Returns the size of the header of the tag.
-func ILTagHeaderSize(tag ILTag) uint64 {
+func tagHeaderSize(tag ILTag) uint64 {
 	size := uint64(ilint.EncodedSize(tag.Id().UInt64()))
 	if !tag.Id().Implicit() {
 		size += uint64(ilint.EncodedSize(tag.ValueSize()))
@@ -61,7 +61,7 @@ func ILTagHeaderSize(tag ILTag) uint64 {
 }
 
 // Serializes the tag header.
-func ILTagSeralizeHeader(tag ILTag, writer io.Writer) error {
+func seralizeTagHeader(tag ILTag, writer io.Writer) error {
 	err := serialization.WriteILInt(writer, tag.Id().UInt64())
 	if err != nil {
 		return err
@@ -72,14 +72,14 @@ func ILTagSeralizeHeader(tag ILTag, writer io.Writer) error {
 	return err
 }
 
-// Returns the size of the tag.
+// Returns the size of the tag in bytes.
 func ILTagSize(tag ILTag) uint64 {
-	return ILTagHeaderSize(tag) + tag.ValueSize()
+	return tagHeaderSize(tag) + tag.ValueSize()
 }
 
 // Serializes the the tag.
 func ILTagSeralize(tag ILTag, writer io.Writer) error {
-	err := ILTagSeralizeHeader(tag, writer)
+	err := seralizeTagHeader(tag, writer)
 	if err != nil {
 		return err
 	}
@@ -91,7 +91,7 @@ func ILTagSeralize(tag ILTag, writer io.Writer) error {
 	}
 }
 
-// Helper function that converts the tag into a byte array directly.
+// Helper function that converts the tag into a byte array.
 func ILTagToBytes(tag ILTag) ([]byte, error) {
 	size := ILTagSize(tag)
 	if size > MAX_TAG_SIZE {
@@ -104,18 +104,17 @@ func ILTagToBytes(tag ILTag) ([]byte, error) {
 	return writer.Bytes(), nil
 }
 
-//------------------------------------------------------------------------------
-
-// Implementation of the raw tag. It can hold any non-implicit tags as a raw
-// value.
-type ILRawTag struct {
-	ILTagHeaderImpl
-	RawPayload
-}
-
-// Create a new ILRawTag.
-func NewILRawTag(id TagID) *ILRawTag {
-	var t ILRawTag
-	t.SetId(id)
-	return &t
+// Converts the given byte array into a ILTag using the specified tag factory.
+// This function fails if the format does not contain a tag or if the data is not
+// fully used by the tag.
+func NewILTagFromBytes(f ILTagFactory, b []byte) (ILTag, error) {
+	r := io.LimitedReader{R: bytes.NewReader(b), N: int64(len(b))}
+	t, err := f.Deserialize(&r)
+	if err != nil {
+		return nil, err
+	} else if r.N == 0 {
+		return t, nil
+	} else {
+		return nil, ErrBadTagFormat
+	}
 }

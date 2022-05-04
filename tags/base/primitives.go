@@ -30,7 +30,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package tags
+package base
+
+import (
+	. "github.com/interlockledger/go-iltags/tags"
+	. "github.com/interlockledger/go-iltags/tags/payloads"
+)
 
 //------------------------------------------------------------------------------
 
@@ -208,6 +213,21 @@ type Float64Tag struct {
 // Create a new Float64Tag.
 func NewFloat64Tag(id TagID) *Float64Tag {
 	var t Float64Tag
+	t.SetId(id)
+	return &t
+}
+
+//------------------------------------------------------------------------------
+
+// Implementation of the float64 tag.
+type Float128Tag struct {
+	ILTagHeaderImpl
+	Float128Payload
+}
+
+// Create a new Float64Tag.
+func NewFloat128Tag(id TagID) *Float128Tag {
+	var t Float128Tag
 	t.SetId(id)
 	return &t
 }

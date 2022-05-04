@@ -41,9 +41,16 @@ var (
 	ErrUnsupportedTagId = fmt.Errorf("Unsupported tag ID.")
 	// Bad tag format
 	ErrBadTagFormat = fmt.Errorf("Bad tag format.")
+	// Unexpected tag id.
+	ErrUnexpectedTagId = fmt.Errorf("Unexpected tag ID.")
 )
 
 // Create a new UnsupportedTagIdError with the specified tag id.
 func NewErrUnsupportedTagId(id TagID) error {
 	return fmt.Errorf("Unsupported tag with id %d: %w", id, ErrUnsupportedTagId)
+}
+
+// Create a new NewErrUnexpectedTagId with the specified tag id.
+func NewErrUnexpectedTagId(id TagID, expectedId TagID) error {
+	return fmt.Errorf("Tag with id %d found but %d was expected: %w", id, expectedId, ErrUnexpectedTagId)
 }

@@ -30,13 +30,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package tags
+package payloads
 
 import (
 	"io"
 
 	"github.com/interlockledger/go-iltags/ilint"
 	"github.com/interlockledger/go-iltags/serialization"
+	. "github.com/interlockledger/go-iltags/tags"
 )
 
 // Implementation of the null payload.
@@ -350,6 +351,26 @@ func (p *Float64Payload) DeserializeValue(factory ILTagFactory, valueSize int, r
 	} else {
 		return err
 	}
+}
+
+//------------------------------------------------------------------------------
+
+// Implementation a basic float128 payload. This version handle this type of
+// value as a binary object.
+type Float128Payload struct {
+	Payload [16]byte
+}
+
+func (p *Float128Payload) ValueSize() uint64 {
+	return 16
+}
+
+func (p *Float128Payload) SerializeValue(writer io.Writer) error {
+	return serialization.WriteBytes(writer, p.Payload[:])
+}
+
+func (p *Float128Payload) DeserializeValue(factory ILTagFactory, valueSize int, reader io.Reader) error {
+	return serialization.ReadBytes(reader, p.Payload[:])
 }
 
 //------------------------------------------------------------------------------

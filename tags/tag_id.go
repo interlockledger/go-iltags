@@ -138,3 +138,31 @@ func (i TagID) Reserved() bool {
 func (i TagID) UInt64() uint64 {
 	return uint64(i)
 }
+
+// Returns the size of the implicit tags. Returns -1 if the tag size is not
+// defined.
+func ImplicitPayloadSize(id TagID) int {
+	IMPLICITY_TAG_SIZES := []int{
+		0,  // IL_NULL_TAG_ID TagID
+		1,  // IL_BOOL_TAG_ID TagID
+		1,  // IL_INT8_TAG_ID TagID
+		1,  // IL_UINT8_TAG_ID TagID
+		2,  // IL_INT16_TAG_ID TagID
+		2,  // IL_UINT16_TAG_ID TagID
+		4,  // IL_INT32_TAG_ID TagID
+		4,  // IL_UINT32_TAG_ID TagID
+		8,  // IL_INT64_TAG_ID TagID
+		8,  // IL_UINT64_TAG_ID TagID
+		-1, // IL_ILINT_TAG_ID TagID
+		4,  // IL_BIN32_TAG_ID TagID
+		8,  // IL_BIN64_TAG_ID TagID
+		16, // IL_BIN128_TAG_ID TagID
+		-1, // IL_SIGNED_ILINT_TAG_ID TagID
+		-1, // Reserved
+	}
+	if id < 16 {
+		return IMPLICITY_TAG_SIZES[int(id)]
+	} else {
+		return -1
+	}
+}

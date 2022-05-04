@@ -30,37 +30,5 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package tags
-
-import (
-	"io"
-
-	"github.com/interlockledger/go-iltags/serialization"
-)
-
-//------------------------------------------------------------------------------
-
-// Implementation of the raw payload.
-type RawPayload struct {
-	Payload []byte
-}
-
-func (p *RawPayload) ValueSize() uint64 {
-	if p.Payload != nil {
-		return uint64(len(p.Payload))
-	} else {
-		return 0
-	}
-}
-
-func (p *RawPayload) SerializeValue(writer io.Writer) error {
-	if p.Payload != nil {
-		return serialization.WriteBytes(writer, p.Payload)
-	}
-	return nil
-}
-
-func (p *RawPayload) DeserializeValue(factory ILTagFactory, valueSize int, reader io.Reader) error {
-	p.Payload = make([]byte, valueSize)
-	return serialization.ReadBytes(reader, p.Payload)
-}
+// Utility functions
+package utils

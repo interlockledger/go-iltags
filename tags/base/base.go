@@ -30,18 +30,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package tags
+package base
 
 import (
-	"io"
+	. "github.com/interlockledger/go-iltags/tags"
+	. "github.com/interlockledger/go-iltags/tags/payloads"
 )
 
-type ILTagFactory interface {
-	// Creates an initialized tag that implements the given tag ID. Returns nil
-	// if the ID is not supported.
-	CreateTag(tagId TagID) (ILTag, error)
+//------------------------------------------------------------------------------
 
-	Deserialize(reader io.Reader) (ILTag, error)
+// Implementation of the raw tag.
+type RawTag struct {
+	ILTagHeaderImpl
+	RawPayload
+}
 
-	DeserializeInto(reader io.Reader, tag ILTag) error
+// Create a new RawTag.
+func NewRawTag(id TagID) *RawTag {
+	var t RawTag
+	t.SetId(id)
+	return &t
 }
