@@ -30,38 +30,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package tags
+/*
+This package implements the ILInt standard as defined in
+ILInt Specification (https://github.com/interlockledger/specification/blob/master/ILInt/README.md).
 
-// This is the interface of all ILTags.
-type ILTagHeader interface {
-	// Returns the TagID.
-	Id() TagID
-
-	// Sets the TagID.
-	SetId(id TagID)
-
-	Implicit() bool
-
-	Reserved() bool
-}
-
-// This struct is the base implementation of the ILTagHeader interface.
-type ILTagHeaderImpl struct {
-	id TagID
-}
-
-func (h *ILTagHeaderImpl) Id() TagID {
-	return h.id
-}
-
-func (h *ILTagHeaderImpl) SetId(id TagID) {
-	h.id = id
-}
-
-func (h *ILTagHeaderImpl) Implicit() bool {
-	return h.id.Implicit()
-}
-
-func (h *ILTagHeaderImpl) Reserved() bool {
-	return h.id.Reserved()
-}
+The code inside this package is partially based on the Rust version of this
+library (https://github.com/interlockledger/rust-il2-iltags).
+*/
+package ilint

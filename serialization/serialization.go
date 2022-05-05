@@ -30,16 +30,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
-This package implements the serialization primitives used to serialize the tags.
-
-Although the standard library package binary can perform most of the tasks
-inside this package we decided to go for a more explicit approach when dealing
-with this API.
-
-Furthermore, this API is designed to be as strict as possible regarding the data
-formats because it is expected to be used to deal with signed data.
-*/
 package serialization
 
 import (

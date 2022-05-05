@@ -30,13 +30,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
-This package implements the ILInt standard as defined in
-ILInt Specification (https://github.com/interlockledger/specification/blob/master/ILInt/README.md).
-
-The code inside this package is partially based on the Rust version of this
-library (https://github.com/interlockledger/rust-il2-iltags).
-*/
 package ilint
 
 import (

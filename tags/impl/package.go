@@ -30,29 +30,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package tags
-
-import (
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-)
-
-func TestILTagHeaderImpl(t *testing.T) {
-	var _ ILTagHeader = (*ILTagHeaderImpl)(nil)
-	var h ILTagHeaderImpl
-
-	assert.Equal(t, TagID(0), h.Id())
-	assert.True(t, h.Implicit())
-	assert.True(t, h.Reserved())
-
-	h.SetId(16)
-	assert.Equal(t, TagID(16), h.Id())
-	assert.False(t, h.Implicit())
-	assert.True(t, h.Reserved())
-
-	h.SetId(32)
-	assert.Equal(t, TagID(32), h.Id())
-	assert.False(t, h.Implicit())
-	assert.False(t, h.Reserved())
-}
+/*
+ This package contains the concrete implementation of the ILTags.
+*/
+package impl

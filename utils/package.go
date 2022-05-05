@@ -30,6 +30,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// Utility functions.
 package utils
 
 // Shreds the given byte array. It will zeroes the entire underlying byte array

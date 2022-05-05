@@ -30,18 +30,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package tags
+package impl
 
 import (
-	"io"
+	"testing"
+
+	. "github.com/interlockledger/go-iltags/tags"
+	"github.com/stretchr/testify/assert"
 )
 
-type ILTagFactory interface {
-	// Creates an initialized tag that implements the given tag ID. Returns nil
-	// if the ID is not supported.
-	CreateTag(tagId TagID) (ILTag, error)
+func TestILTagHeaderImpl(t *testing.T) {
+	var _ ILTagHeader = (*ILTagHeaderImpl)(nil)
+	var h ILTagHeaderImpl
 
-	Deserialize(reader io.Reader) (ILTag, error)
+	assert.Equal(t, TagID(0), h.Id())
+	assert.True(t, h.Implicit())
+	assert.True(t, h.Reserved())
 
-	DeserializeInto(reader io.Reader, tag ILTag) error
+	h.SetId(16)
+	assert.Equal(t, TagID(16), h.Id())
+	assert.False(t, h.Implicit())
+	assert.True(t, h.Reserved())
+
+	h.SetId(32)
+	assert.Equal(t, TagID(32), h.Id())
+	assert.False(t, h.Implicit())
+	assert.False(t, h.Reserved())
 }

@@ -30,14 +30,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package factory
+package impl
 
 import (
 	"io"
 
 	"github.com/interlockledger/go-iltags/serialization"
 	. "github.com/interlockledger/go-iltags/tags"
-	. "github.com/interlockledger/go-iltags/tags/base"
 )
 
 // Creates a new standard ILTag. It returns an error if the ID is not a

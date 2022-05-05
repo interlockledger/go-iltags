@@ -30,24 +30,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package base
+package impl
 
 import (
+	"testing"
+
 	. "github.com/interlockledger/go-iltags/tags"
-	. "github.com/interlockledger/go-iltags/tags/payloads"
 )
 
-//------------------------------------------------------------------------------
-
-// Implementation of the raw tag.
-type RawTag struct {
-	ILTagHeaderImpl
-	RawPayload
-}
-
-// Create a new RawTag.
-func NewRawTag(id TagID) *RawTag {
-	var t RawTag
-	t.SetId(id)
-	return &t
+func TestNullPayload(t *testing.T) {
+	var _ ILTagPayload = (*NullPayload)(nil)
 }

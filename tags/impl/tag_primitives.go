@@ -30,11 +30,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package base
+package impl
 
 import (
 	. "github.com/interlockledger/go-iltags/tags"
-	. "github.com/interlockledger/go-iltags/tags/payloads"
 )
 
 //------------------------------------------------------------------------------

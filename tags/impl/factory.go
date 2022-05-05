@@ -30,13 +30,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package factory
+package impl
 
 import (
 	"io"
 
 	. "github.com/interlockledger/go-iltags/tags"
-	. "github.com/interlockledger/go-iltags/tags/base"
 )
 
 // This is the type of the common interface for all ILTag creators.
@@ -74,14 +73,14 @@ func (f *StandardTagFactory) createTagFromCreators(tagId TagID) (ILTag, error) {
 // if the ID is not supported.
 func (f *StandardTagFactory) CreateTag(tagId TagID) (ILTag, error) {
 	if tagId.Reserved() {
-		return NewStandardTag(tagId)
+		return newStandardTag(tagId)
 	} else {
 		return f.createTagFromCreators(tagId)
 	}
 }
 
 func (f *StandardTagFactory) Deserialize(reader io.Reader) (ILTag, error) {
-	tagId, size, err := ReadTagHeader(reader)
+	tagId, size, err := readTagHeader(reader)
 	if err != nil {
 		return nil, err
 	}
@@ -89,7 +88,7 @@ func (f *StandardTagFactory) Deserialize(reader io.Reader) (ILTag, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err = ReadTagPayload(f, reader, size, t); err != nil {
+	if err = readTagPayload(f, reader, size, t); err != nil {
 		return nil, err
 	} else {
 		return t, nil
@@ -97,14 +96,14 @@ func (f *StandardTagFactory) Deserialize(reader io.Reader) (ILTag, error) {
 }
 
 func (f *StandardTagFactory) DeserializeInto(reader io.Reader, tag ILTag) error {
-	tagId, size, err := ReadTagHeader(reader)
+	tagId, size, err := readTagHeader(reader)
 	if err != nil {
 		return err
 	}
 	if tagId != tag.Id() {
 		return NewErrUnexpectedTagId(tagId, tag.Id())
 	}
-	if err = ReadTagPayload(f, reader, size, tag); err != nil {
+	if err = readTagPayload(f, reader, size, tag); err != nil {
 		return err
 	} else {
 		return nil
