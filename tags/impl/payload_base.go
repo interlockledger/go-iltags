@@ -253,7 +253,7 @@ func (p *ILTagArrayPayload) DeserializeValue(factory ILTagFactory, valueSize int
 	}
 	a := make([]ILTag, int(size))
 	for i := 0; i < len(a); i++ {
-		if v, err := factory.Deserialize(&r); err != nil {
+		if v, err := ILTagDeserialize(factory, &r); err != nil {
 			return err
 		} else {
 			a[i] = v
@@ -302,7 +302,7 @@ func (p *ILTagSequencePayload) DeserializeValue(factory ILTagFactory, valueSize 
 
 	a := make([]ILTag, 0, 16)
 	for {
-		if v, err := factory.Deserialize(&r); err != nil {
+		if v, err := ILTagDeserialize(factory, &r); err != nil {
 			return err
 		} else {
 			a = append(a, v)
@@ -360,4 +360,80 @@ func (p *RangePayload) DeserializeValue(factory ILTagFactory, valueSize int, rea
 	} else {
 		return ErrBadTagFormat
 	}
+}
+
+//------------------------------------------------------------------------------
+
+// Implementation of the version payload.
+type VersionPayload struct {
+	Major    int32
+	Minor    int32
+	Revision int32
+	Build    int32
+}
+
+func (p *VersionPayload) ValueSize() uint64 {
+	return uint64(4 + 4 + 4 + 4)
+}
+
+func (p *VersionPayload) SerializeValue(writer io.Writer) error {
+	if err := serialization.WriteInt32(writer, p.Major); err != nil {
+		return err
+	}
+	if err := serialization.WriteInt32(writer, p.Minor); err != nil {
+		return err
+	}
+	if err := serialization.WriteInt32(writer, p.Revision); err != nil {
+		return err
+	}
+	if err := serialization.WriteInt32(writer, p.Build); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *VersionPayload) DeserializeValue(factory ILTagFactory, valueSize int, reader io.Reader) error {
+	if valueSize != 16 {
+		return ErrBadTagFormat
+	}
+	major, err := serialization.ReadInt32(reader)
+	if err != nil {
+		return err
+	}
+	minor, err := serialization.ReadInt32(reader)
+	if err != nil {
+		return err
+	}
+	revision, err := serialization.ReadInt32(reader)
+	if err != nil {
+		return err
+	}
+	build, err := serialization.ReadInt32(reader)
+	if err != nil {
+		return err
+	}
+	p.Major = major
+	p.Minor = minor
+	p.Revision = revision
+	p.Build = build
+	return nil
+}
+
+//------------------------------------------------------------------------------
+
+// Implementation of the version payload.
+type StringDictionaryPayload struct {
+	Map StableStringMap
+}
+
+func (p *StringDictionaryPayload) ValueSize() uint64 {
+	return 0
+}
+
+func (p *StringDictionaryPayload) SerializeValue(writer io.Writer) error {
+	return nil
+}
+
+func (p *StringDictionaryPayload) DeserializeValue(factory ILTagFactory, valueSize int, reader io.Reader) error {
+	return nil
 }

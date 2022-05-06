@@ -33,6 +33,9 @@
 package impl
 
 import (
+	"io"
+
+	"github.com/interlockledger/go-iltags/serialization"
 	. "github.com/interlockledger/go-iltags/tags"
 )
 
@@ -47,4 +50,62 @@ func NewStringTag(id TagID) *StringTag {
 	var t StringTag
 	t.SetId(id)
 	return &t
+}
+
+/*
+Serializes a string directly into a string tag.
+
+This function exists as a faster and more efficient way to deal with string tags
+without using StringTag instances.
+*/
+func SerializeStringTag(tagId TagID, s string, writer io.Writer) error {
+	if err := serialization.WriteILInt(writer, uint64(tagId)); err != nil {
+		return err
+	}
+	if err := serialization.WriteILInt(writer, uint64(len(s))); err != nil {
+		return err
+	}
+	if err := serialization.WriteString(writer, s); err != nil {
+		return err
+	}
+	return nil
+}
+
+/*
+Deserializes a string tag directly into a string.
+
+This function exists as a faster and more efficient way to deal with string tags
+without using StringTag instances.
+*/
+func DeserializeStringTag(expectedId TagID, reader io.Reader) (string, error) {
+	id, err := serialization.ReadILInt(reader)
+	if err != nil {
+		return "", err
+	}
+	if TagID(id) != expectedId {
+		return "", NewErrUnexpectedTagId(expectedId, TagID(id))
+	}
+	size, err := serialization.ReadILInt(reader)
+	if size > MAX_TAG_SIZE {
+		return "", ErrTagTooLarge
+	}
+	if s, err := serialization.ReadString(reader, int(size)); err != nil {
+		return "", err
+	} else {
+		return s, nil
+	}
+}
+
+/*
+Serializes a string directly into a standard string tag.
+*/
+func SerializeStdStringTag(s string, writer io.Writer) error {
+	return SerializeStringTag(IL_STRING_TAG_ID, s, writer)
+}
+
+/*
+Deserializes a standard string tag directly into a string.
+*/
+func DeserializeStdStringTag(reader io.Reader) (string, error) {
+	return DeserializeStringTag(IL_STRING_TAG_ID, reader)
 }
