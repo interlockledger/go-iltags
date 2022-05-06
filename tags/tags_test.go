@@ -1,0 +1,389 @@
+/*
+ * BSD 3-Clause License
+ *
+ * Copyright (c) 2022, InterlockLedger Network
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * * Redistributions of source code must retain the above copyright notice, this
+ *   list of conditions and the following disclaimer.
+ *
+ * * Redistributions in binary form must reproduce the above copyright notice,
+ *   this list of conditions and the following disclaimer in the documentation
+ *   and/or other materials provided with the distribution.
+ *
+ * * Neither the name of the copyright holder nor the names of its
+ *   contributors may be used to endorse or promote products derived from
+ *   this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+package tags
+
+import (
+	"bytes"
+	"io"
+	"testing"
+
+	"github.com/interlockledger/go-iltags/ilint"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+)
+
+//------------------------------------------------------------------------------
+type mockTag struct {
+	mock.Mock
+}
+
+func (t *mockTag) Id() TagID {
+	ret := t.Called()
+	return ret.Get(0).(TagID)
+}
+
+func (t *mockTag) Implicit() bool {
+	t.Called()
+	return t.Id().Implicit()
+}
+
+func (t *mockTag) Reserved() bool {
+	t.Called()
+	return t.Id().Implicit()
+}
+
+func (t *mockTag) ValueSize() uint64 {
+	ret := t.Called()
+	return ret.Get(0).(uint64)
+}
+
+func (t *mockTag) SerializeValue(writer io.Writer) error {
+	ret := t.Called(writer)
+	return ret.Error(0)
+}
+
+func (t *mockTag) DeserializeValue(factory ILTagFactory, valueSize int, reader io.Reader) error {
+	ret := t.Called(factory, valueSize, reader)
+	return ret.Error(0)
+}
+
+type mockFactory struct {
+	mock.Mock
+}
+
+func (t *mockFactory) CreateTag(tagId TagID) (ILTag, error) {
+	ret := t.Called(tagId)
+	return ret.Get(0).(ILTag), ret.Error(1)
+}
+
+type mockWriter struct {
+	mock.Mock
+}
+
+func (w *mockWriter) Write(b []byte) (int, error) {
+	ret := w.Called(len(b))
+	return ret.Int(0), ret.Error(1)
+}
+
+//------------------------------------------------------------------------------
+
+func TestTagHeaderSize(t *testing.T) {
+
+	// Implicit
+	tag := mockTag{}
+	tag.On("Id").Return(IL_BOOL_TAG_ID)
+	assert.Equal(t, uint64(1), tagHeaderSize(&tag))
+
+	// Explicit
+	tag = mockTag{}
+	tag.On("Id").Return(TagID(123456))
+	tag.On("ValueSize").Return(uint64(12312312312313))
+	exp := ilint.EncodedSize(123456) + ilint.EncodedSize(12312312312313)
+	assert.Equal(t, uint64(exp), tagHeaderSize(&tag))
+}
+
+func TestSeralizeTagHeader(t *testing.T) {
+
+	// Implicit
+	tag := mockTag{}
+	w := mockWriter{}
+	tag.On("Id").Return(IL_BOOL_TAG_ID)
+	w.On("Write", 1).Return(1, nil)
+	assert.Nil(t, seralizeTagHeader(&tag, &w))
+
+	// Implicit error
+	tag = mockTag{}
+	w = mockWriter{}
+	tag.On("Id").Return(IL_BOOL_TAG_ID)
+	w.On("Write", 1).Return(0, io.ErrUnexpectedEOF)
+	assert.Equal(t, uint64(1), tagHeaderSize(&tag))
+	assert.ErrorIs(t, seralizeTagHeader(&tag, &w), io.ErrUnexpectedEOF)
+
+	// Explicit
+	tag = mockTag{}
+	w = mockWriter{}
+	tag.On("Id").Return(TagID(123456))
+	tag.On("ValueSize").Return(uint64(12312312312313))
+	w.On("Write", ilint.EncodedSize(123456)).Return(ilint.EncodedSize(123456), nil)
+	w.On("Write", ilint.EncodedSize(12312312312313)).Return(ilint.EncodedSize(12312312312313), nil)
+	assert.Nil(t, seralizeTagHeader(&tag, &w))
+
+	tag = mockTag{}
+	w = mockWriter{}
+	tag.On("Id").Return(TagID(123456))
+	tag.On("ValueSize").Return(uint64(12312312312313))
+	w.On("Write", ilint.EncodedSize(123456)).Return(0, io.ErrUnexpectedEOF)
+	w.On("Write", ilint.EncodedSize(12312312312313)).Return(ilint.EncodedSize(12312312312313), nil)
+	assert.ErrorIs(t, seralizeTagHeader(&tag, &w), io.ErrUnexpectedEOF)
+
+	tag = mockTag{}
+	w = mockWriter{}
+	tag.On("Id").Return(TagID(123456))
+	tag.On("ValueSize").Return(uint64(12312312312313))
+	w.On("Write", ilint.EncodedSize(123456)).Return(ilint.EncodedSize(123456), nil)
+	w.On("Write", ilint.EncodedSize(12312312312313)).Return(0, io.ErrUnexpectedEOF)
+	assert.ErrorIs(t, seralizeTagHeader(&tag, &w), io.ErrUnexpectedEOF)
+}
+
+func TestILTagSize(t *testing.T) {
+
+	// Implicit
+	tag := mockTag{}
+	tag.On("Id").Return(IL_BOOL_TAG_ID)
+	tag.On("ValueSize").Return(uint64(10))
+	assert.Equal(t, uint64(11), ILTagSize(&tag))
+
+	// Explicit
+	tag = mockTag{}
+	tag.On("Id").Return(TagID(123456))
+	tag.On("ValueSize").Return(uint64(12312312312313))
+	exp := uint64(ilint.EncodedSize(123456)+ilint.EncodedSize(12312312312313)) + uint64(12312312312313)
+	assert.Equal(t, exp, ILTagSize(&tag))
+}
+
+func TestILTagSeralize(t *testing.T) {
+
+	// Implicit
+	tag := mockTag{}
+	w := bytes.NewBuffer(nil)
+	tag.On("Id").Return(IL_BOOL_TAG_ID)
+	tag.On("ValueSize").Return(uint64(5))
+	tag.On("SerializeValue", w).Run(func(args mock.Arguments) {
+		args.Get(0).(io.Writer).Write([]byte{1, 2, 3, 4, 5})
+	}).Return(nil)
+	assert.Nil(t, ILTagSeralize(&tag, w))
+	assert.Equal(t, []byte{1, 1, 2, 3, 4, 5}, w.Bytes())
+
+	// Explicit
+	tag = mockTag{}
+	w = bytes.NewBuffer(nil)
+	tag.On("Id").Return(TagID(16))
+	tag.On("ValueSize").Return(uint64(5))
+	tag.On("SerializeValue", w).Run(func(args mock.Arguments) {
+		args.Get(0).(io.Writer).Write([]byte{1, 2, 3, 4, 5})
+	}).Return(nil)
+	assert.Nil(t, ILTagSeralize(&tag, w))
+	assert.Equal(t, []byte{16, 5, 1, 2, 3, 4, 5}, w.Bytes())
+
+	// Failure on header
+	tag = mockTag{}
+	we := mockWriter{}
+	tag.On("Id").Return(IL_BOOL_TAG_ID)
+	tag.On("ValueSize").Return(uint64(5))
+	tag.On("SerializeValue", &we).Return(nil)
+	we.On("Write", 1).Return(0, io.ErrShortWrite)
+	assert.ErrorIs(t, ILTagSeralize(&tag, &we), io.ErrShortWrite)
+
+	// Failure on payload serialization
+	tag = mockTag{}
+	we = mockWriter{}
+	tag.On("Id").Return(IL_BOOL_TAG_ID)
+	tag.On("ValueSize").Return(uint64(5))
+	tag.On("SerializeValue", &we).Return(io.ErrShortWrite)
+	we.On("Write", 1).Return(1, nil)
+	assert.ErrorIs(t, ILTagSeralize(&tag, &we), io.ErrShortWrite)
+}
+
+func TestILTagToBytes(t *testing.T) {
+
+	tag := mockTag{}
+	tag.On("Id").Return(IL_BOOL_TAG_ID)
+	tag.On("ValueSize").Return(uint64(5))
+	tag.On("SerializeValue", mock.Anything).Run(func(args mock.Arguments) {
+		args.Get(0).(io.Writer).Write([]byte{1, 2, 3, 4, 5})
+	}).Return(nil)
+	b, err := ILTagToBytes(&tag)
+	assert.Nil(t, err)
+	assert.Equal(t, []byte{1, 1, 2, 3, 4, 5}, b)
+
+	// Fail
+	tag = mockTag{}
+	tag.On("Id").Return(IL_BOOL_TAG_ID)
+	tag.On("ValueSize").Return(uint64(5))
+	tag.On("SerializeValue", mock.Anything).Return(io.ErrShortWrite)
+	b, err = ILTagToBytes(&tag)
+	assert.ErrorIs(t, err, io.ErrShortWrite)
+	assert.Nil(t, b)
+}
+
+func TestImplicitPayloadSize(t *testing.T) {
+	assert.Equal(t, int(0), implicitPayloadSize(IL_NULL_TAG_ID))
+	assert.Equal(t, int(1), implicitPayloadSize(IL_BOOL_TAG_ID))
+	assert.Equal(t, int(1), implicitPayloadSize(IL_INT8_TAG_ID))
+	assert.Equal(t, int(1), implicitPayloadSize(IL_UINT8_TAG_ID))
+	assert.Equal(t, int(2), implicitPayloadSize(IL_INT16_TAG_ID))
+	assert.Equal(t, int(2), implicitPayloadSize(IL_UINT16_TAG_ID))
+	assert.Equal(t, int(4), implicitPayloadSize(IL_INT32_TAG_ID))
+	assert.Equal(t, int(4), implicitPayloadSize(IL_UINT32_TAG_ID))
+	assert.Equal(t, int(8), implicitPayloadSize(IL_INT64_TAG_ID))
+	assert.Equal(t, int(8), implicitPayloadSize(IL_UINT64_TAG_ID))
+	assert.Equal(t, int(-1), implicitPayloadSize(IL_ILINT_TAG_ID))
+	assert.Equal(t, int(4), implicitPayloadSize(IL_BIN32_TAG_ID))
+	assert.Equal(t, int(8), implicitPayloadSize(IL_BIN64_TAG_ID))
+	assert.Equal(t, int(16), implicitPayloadSize(IL_BIN128_TAG_ID))
+	assert.Equal(t, int(-1), implicitPayloadSize(IL_SIGNED_ILINT_TAG_ID))
+	assert.Equal(t, int(-1), implicitPayloadSize(TagID(15)))
+	assert.Equal(t, int(-1), implicitPayloadSize(TagID(16)))
+	assert.Equal(t, int(-1), implicitPayloadSize(TagID(16123123)))
+}
+
+func TestReadTagID(t *testing.T) {
+
+	r := bytes.NewReader([]byte{20})
+	v, err := readTagID(r)
+	assert.Nil(t, err)
+	assert.Equal(t, TagID(20), v)
+
+	r = bytes.NewReader([]byte{0xFF})
+	v, err = readTagID(r)
+	assert.NotNil(t, err)
+	assert.Equal(t, TagID(0), v)
+}
+
+func TestReadTagHeader(t *testing.T) {
+
+	// Implicit
+	for i := 0; i < 16; i++ {
+		expId := TagID(i)
+		r := bytes.NewReader([]byte{byte(i)})
+		v, s, err := readTagHeader(r)
+		assert.Nil(t, err)
+		assert.Equal(t, expId, v)
+		expSize := int64(implicitPayloadSize(expId))
+		assert.Equal(t, uint64(expSize), s)
+	}
+
+	// Explicit
+	r := bytes.NewReader([]byte{0x10, 0x5})
+	v, s, err := readTagHeader(r)
+	assert.Nil(t, err)
+	assert.Equal(t, TagID(0x10), v)
+	assert.Equal(t, uint64(0x5), s)
+
+	// Fail to get the tag
+	r = bytes.NewReader([]byte{})
+	v, s, err = readTagHeader(r)
+	assert.NotNil(t, err)
+	assert.Equal(t, TagID(0), v)
+	assert.Equal(t, uint64(0), s)
+
+	// Fail to reade the size
+	r = bytes.NewReader([]byte{0x10, 0xFF})
+	v, s, err = readTagHeader(r)
+	assert.NotNil(t, err)
+	assert.Equal(t, TagID(0), v)
+	assert.Equal(t, uint64(0), s)
+}
+
+func TestReadTagPayload(t *testing.T) {
+
+	// Read ILInt
+	f := &mockFactory{}
+	tag := &mockTag{}
+	r := bytes.NewBuffer([]byte{})
+	s := uint64(0xFFFF_FFFF_FFFF_FFFF)
+	tag.On("Id").Return(IL_ILINT_TAG_ID)
+	tag.On("DeserializeValue", f, -1, r).Return(nil)
+	assert.Nil(t, readTagPayload(f, r, s, tag))
+
+	// Read Signed ILInt
+	f = &mockFactory{}
+	tag = &mockTag{}
+	s = uint64(0xFFFF_FFFF_FFFF_FFFF)
+	tag.On("Id").Return(IL_SIGNED_ILINT_TAG_ID)
+	tag.On("DeserializeValue", f, -1, r).Return(nil)
+	assert.Nil(t, readTagPayload(f, r, s, tag))
+
+	// Read Tag with size > MAX_TAG_SIZE
+	f = &mockFactory{}
+	tag = &mockTag{}
+	s = uint64(MAX_TAG_SIZE + 1)
+	tag.On("Id").Return(IL_BYTES_TAG_ID)
+	tag.On("DeserializeValue", f, int(s), r).Return(nil)
+	assert.ErrorIs(t, readTagPayload(f, r, s, tag), ErrTagTooLarge)
+
+	// Read Tag with size == 0
+	f = &mockFactory{}
+	tag = &mockTag{}
+	s = uint64(0)
+	tag.On("Id").Return(IL_BYTES_TAG_ID)
+	assert.Nil(t, readTagPayload(f, r, s, tag))
+
+	// Read a normal tag
+	f = &mockFactory{}
+	tag = &mockTag{}
+	r = bytes.NewBuffer([]byte{1, 2, 3, 4, 5})
+	s = uint64(5)
+	tag.On("Id").Return(IL_BYTES_TAG_ID)
+	tag.On("DeserializeValue", f, int(s), mock.Anything).Run(func(args mock.Arguments) {
+		var tmp [5]byte
+		args.Get(2).(io.Reader).Read(tmp[:])
+	}).Return(nil)
+	assert.Nil(t, readTagPayload(f, r, s, tag))
+
+	// Fail to read all bytes
+	f = &mockFactory{}
+	tag = &mockTag{}
+	r = bytes.NewBuffer([]byte{1, 2, 3, 4, 5})
+	s = uint64(5)
+	tag.On("Id").Return(IL_BYTES_TAG_ID)
+	tag.On("DeserializeValue", f, int(s), mock.Anything).Run(func(args mock.Arguments) {
+		var tmp [4]byte
+		args.Get(2).(io.Reader).Read(tmp[:])
+	}).Return(nil)
+	assert.ErrorIs(t, readTagPayload(f, r, s, tag), ErrBadTagFormat)
+
+	// Fail with error
+	f = &mockFactory{}
+	tag = &mockTag{}
+	r = bytes.NewBuffer([]byte{})
+	s = uint64(5)
+	tag.On("Id").Return(IL_BYTES_TAG_ID)
+	tag.On("DeserializeValue", f, int(s), mock.Anything).Return(io.ErrUnexpectedEOF)
+	assert.ErrorIs(t, readTagPayload(f, r, s, tag), io.ErrUnexpectedEOF)
+}
+
+func TestILTagDeserialize(t *testing.T) {
+
+	// Read Null Tag
+	r := bytes.NewBuffer([]byte{0x00})
+	tag := &mockTag{}
+	tag.On("Id").Return(IL_NULL_TAG_ID)
+	f := &mockFactory{}
+	f.On("CreateTag", IL_NULL_TAG_ID).Return(tag, nil)
+	nt, err := ILTagDeserialize(f, r)
+	assert.Nil(t, err)
+	assert.Same(t, nt, tag)
+
+	// TODO Continue later
+}

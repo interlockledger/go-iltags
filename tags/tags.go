@@ -69,14 +69,13 @@ func tagHeaderSize(tag ILTag) uint64 {
 Serializes the tag header.
 */
 func seralizeTagHeader(tag ILTag, writer io.Writer) error {
-	err := serialization.WriteILInt(writer, tag.Id().UInt64())
-	if err != nil {
+	if err := serialization.WriteILInt(writer, tag.Id().UInt64()); err != nil {
 		return err
 	}
 	if !tag.Id().Implicit() {
-		err = serialization.WriteILInt(writer, tag.ValueSize())
+		return serialization.WriteILInt(writer, tag.ValueSize())
 	}
-	return err
+	return nil
 }
 
 /*
@@ -90,16 +89,13 @@ func ILTagSize(tag ILTag) uint64 {
 Serializes the the tag into a stream of bytes.
 */
 func ILTagSeralize(tag ILTag, writer io.Writer) error {
-	err := seralizeTagHeader(tag, writer)
-	if err != nil {
+	if err := seralizeTagHeader(tag, writer); err != nil {
 		return err
 	}
-	err = tag.SerializeValue(writer)
-	if err != nil {
+	if err := tag.SerializeValue(writer); err != nil {
 		return err
-	} else {
-		return nil
 	}
+	return nil
 }
 
 /*
@@ -108,9 +104,6 @@ ILTagSeralize().
 */
 func ILTagToBytes(tag ILTag) ([]byte, error) {
 	size := ILTagSize(tag)
-	if size > MAX_TAG_SIZE {
-		return nil, ErrTagTooLarge
-	}
 	writer := bytes.NewBuffer(make([]byte, 0, int(size)))
 	if err := ILTagSeralize(tag, writer); err != nil {
 		return nil, err
@@ -126,21 +119,21 @@ implicit ILInt tag family.
 */
 func implicitPayloadSize(id TagID) int {
 	IMPLICITY_TAG_SIZES := []int{
-		0,  // IL_NULL_TAG_ID TagID
-		1,  // IL_BOOL_TAG_ID TagID
-		1,  // IL_INT8_TAG_ID TagID
-		1,  // IL_UINT8_TAG_ID TagID
-		2,  // IL_INT16_TAG_ID TagID
-		2,  // IL_UINT16_TAG_ID TagID
-		4,  // IL_INT32_TAG_ID TagID
-		4,  // IL_UINT32_TAG_ID TagID
-		8,  // IL_INT64_TAG_ID TagID
-		8,  // IL_UINT64_TAG_ID TagID
-		-1, // IL_ILINT_TAG_ID TagID
-		4,  // IL_BIN32_TAG_ID TagID
-		8,  // IL_BIN64_TAG_ID TagID
-		16, // IL_BIN128_TAG_ID TagID
-		-1, // IL_SIGNED_ILINT_TAG_ID TagID
+		0,  // IL_NULL_TAG_ID
+		1,  // IL_BOOL_TAG_ID
+		1,  // IL_INT8_TAG_ID
+		1,  // IL_UINT8_TAG_ID
+		2,  // IL_INT16_TAG_ID
+		2,  // IL_UINT16_TAG_ID
+		4,  // IL_INT32_TAG_ID
+		4,  // IL_UINT32_TAG_ID
+		8,  // IL_INT64_TAG_ID
+		8,  // IL_UINT64_TAG_ID
+		-1, // IL_ILINT_TAG_ID
+		4,  // IL_BIN32_TAG_ID
+		8,  // IL_BIN64_TAG_ID
+		16, // IL_BIN128_TAG_ID
+		-1, // IL_SIGNED_ILINT_TAG_ID
 		-1, // Reserved
 	}
 	if id < 16 {
@@ -159,7 +152,12 @@ func readTagID(reader io.Reader) (TagID, error) {
 	}
 }
 
-// Reads the tag header and returns the tag id and the tag size.
+/*
+Reads the tag header and returns the tag id and the tag size.
+
+Some implicit tags will return the size as 0xFFFF_FFFF_FFFF_FFFF to denote that
+the size is fixed.
+*/
 func readTagHeader(reader io.Reader) (TagID, uint64, error) {
 	tagId, err := readTagID(reader)
 	if err != nil {
@@ -173,47 +171,30 @@ func readTagHeader(reader io.Reader) (TagID, uint64, error) {
 		if err != nil {
 			return 0, 0, err
 		}
-		if size > MAX_TAG_SIZE {
-			return 0, 0, ErrTagTooLarge
-		}
 	}
 	return tagId, size, nil
 }
 
 /*
-Serializes the the tag into a stream of bytes.
-*/
-func ILTagDeseralize(f, ILTagFactory, tag ILTag, writer io.Writer) error {
-	err := seralizeTagHeader(tag, writer)
-	if err != nil {
-		return err
-	}
-	err = tag.SerializeValue(writer)
-	if err != nil {
-		return err
-	} else {
-		return nil
-	}
-}
-
-/*
-Reads the payload of a tag.
+Reads the payload of a tag. This function also verifies if the tag respects the
+maximum size allowed by this library.
 */
 func readTagPayload(factory ILTagFactory, reader io.Reader, size uint64, tag ILTag) error {
 	if tag.Id() == IL_ILINT_TAG_ID || tag.Id() == IL_SIGNED_ILINT_TAG_ID {
 		return tag.DeserializeValue(factory, -1, reader)
-	} else {
+	} else if size > MAX_TAG_SIZE {
+		return ErrTagTooLarge
+	} else if size > 0 {
 		r := io.LimitedReader{R: reader, N: int64(size)}
 		err := tag.DeserializeValue(factory, int(size), &r)
 		if err != nil {
-			return nil
+			return err
 		}
 		if r.N != 0 {
 			return ErrBadTagFormat
-		} else {
-			return nil
 		}
 	}
+	return nil
 }
 
 /*
