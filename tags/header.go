@@ -32,15 +32,22 @@
 
 package tags
 
-// This is the interface of all ILTags.
+/*
+This is the interface of an ILTags header.
+*/
 type ILTagHeader interface {
-	// Returns the TagID.
+	/*
+		Returns the TagID.
+	*/
 	Id() TagID
 
-	// Sets the TagID.
-	SetId(id TagID)
-
+	/*
+		Returns true if the tag is implicit.
+	*/
 	Implicit() bool
 
+	/*
+		Returns true if the tag is reserved.
+	*/
 	Reserved() bool
 }

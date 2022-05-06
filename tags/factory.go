@@ -36,13 +36,37 @@ import (
 	"io"
 )
 
-// This is the interface of all ILTag factories.
+/*
+This is the interface of all ILTag factories. Factories are used to create
+instances of concrete implementations of ILTags based on the given tag id.
+
+It can also be used to deserialize tags from Readers and byte arrays.
+*/
 type ILTagFactory interface {
-	// Creates an initialized tag that implements the given tag ID. Returns nil
-	// if the ID is not supported.
+	/*
+		Creates an unitialized tag that implements the given tag ID. It returns
+		an error if the tag cannot be created by any reason (unsupported,
+		unknown, etc).
+	*/
 	CreateTag(tagId TagID) (ILTag, error)
 
+	/*
+		Deserializes the tag found in the current position of the reader.
+	*/
 	Deserialize(reader io.Reader) (ILTag, error)
 
+	/*
+		Helper function that tries to deserialize the current tag into the given
+		tag implementation. It fails if the tag id doesn't match or if the data
+		is corrupted.
+	*/
 	DeserializeInto(reader io.Reader, tag ILTag) error
+
+	/*
+		Converts the given byte array into a ILTag using the given tag factory.
+
+		This function fails if the format does not contain a tag or if the data is not
+		fully used by the tag.
+	*/
+	FromBytes(b []byte) (ILTag, error)
 }

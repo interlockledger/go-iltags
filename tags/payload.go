@@ -30,22 +30,34 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// This package contains the implementation of ILTags standard.
 package tags
 
 import (
 	"io"
 )
 
-// Interface for the ILTag payloads.
+/*
+This is the interface for the ILTag payloads. It must be able to serialize and
+deserialize the value into/from a byte stream.
+*/
 type ILTagPayload interface {
-	// The size of the value.
+	/*
+		Returns the size of the serialized value in bytes.
+	*/
 	ValueSize() uint64
 
-	// Serializes the value into a Writer.
+	/*
+		Serializes the value into a Writer.
+	*/
 	SerializeValue(writer io.Writer) error
 
-	// Deserializes the value stored in a Reader. It takes an ILTagFactory,
-	// the size of the value (may be -1 if the size is unknown) and the Reader.
+	/*
+		Deserializes the value stored in a Reader. It takes an ILTagFactory,
+		the size of the serialized value (may be -1 if the size is unknown) and
+		the Reader.
+
+		This method mus fail if the serialized data is malformed, incomplete or
+		excessive.
+	*/
 	DeserializeValue(factory ILTagFactory, valueSize int, reader io.Reader) error
 }

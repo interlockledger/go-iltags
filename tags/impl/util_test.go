@@ -36,8 +36,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-
-	. "github.com/interlockledger/go-iltags/tags"
 )
 
 func TestRemoveKeyEntry(t *testing.T) {
@@ -107,17 +105,13 @@ func TestStableILTagMap(t *testing.T) {
 	assert.Nil(t, m.keys)
 	assert.Equal(t, 0, m.Size())
 
-	v := StringTag{}
-
-	var _ ILTag = (*StringTag)(nil)
-	var _ ILTagPayload = (*StringTag)(nil)
-
-	m.Put("b", &v)
+	v := NewStringTag(32)
+	m.Put("b", v)
 	assert.Equal(t, 1, m.Size())
 	assert.Equal(t, []string{"b"}, m.keys)
 	s, ok := m.Get("b")
 	assert.True(t, ok)
-	assert.Equal(t, "B", s)
+	assert.Same(t, v, s)
 
 	/*
 		m.Put("a", "A")

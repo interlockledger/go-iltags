@@ -40,17 +40,23 @@ import (
 	"github.com/interlockledger/go-iltags/serialization"
 )
 
-// Maximum tag size that can be handled by this library. It in this version it
-// is set to 512MB. This limit may be revised in the future.
+/*
+Maximum tag size that can be handled by this library. It in this version it
+is set to 512MB. This limit may be revised in the future.
+*/
 const MAX_TAG_SIZE uint64 = 1024 * 1024 * 512
 
-// This is the interface of all ILTags.
+/*
+This is the interface of all ILTags.
+*/
 type ILTag interface {
 	ILTagPayload
 	ILTagHeader
 }
 
-// Returns the size of the header of the tag.
+/*
+Returns the size of the header of the tag.
+*/
 func tagHeaderSize(tag ILTag) uint64 {
 	size := uint64(ilint.EncodedSize(tag.Id().UInt64()))
 	if !tag.Id().Implicit() {
@@ -59,7 +65,9 @@ func tagHeaderSize(tag ILTag) uint64 {
 	return size
 }
 
-// Serializes the tag header.
+/*
+Serializes the tag header.
+*/
 func seralizeTagHeader(tag ILTag, writer io.Writer) error {
 	err := serialization.WriteILInt(writer, tag.Id().UInt64())
 	if err != nil {
@@ -71,12 +79,16 @@ func seralizeTagHeader(tag ILTag, writer io.Writer) error {
 	return err
 }
 
-// Returns the size of the tag in bytes.
+/*
+Returns the size of the tag in bytes.
+*/
 func ILTagSize(tag ILTag) uint64 {
 	return tagHeaderSize(tag) + tag.ValueSize()
 }
 
-// Serializes the the tag.
+/*
+Serializes the the tag into a stream of bytes.
+*/
 func ILTagSeralize(tag ILTag, writer io.Writer) error {
 	err := seralizeTagHeader(tag, writer)
 	if err != nil {
@@ -90,7 +102,10 @@ func ILTagSeralize(tag ILTag, writer io.Writer) error {
 	}
 }
 
-// Helper function that converts the tag into a byte array.
+/*
+Helper function that converts the tag into a byte array directly by calling
+ILTagSeralize().
+*/
 func ILTagToBytes(tag ILTag) ([]byte, error) {
 	size := ILTagSize(tag)
 	if size > MAX_TAG_SIZE {
@@ -101,19 +116,4 @@ func ILTagToBytes(tag ILTag) ([]byte, error) {
 		return nil, err
 	}
 	return writer.Bytes(), nil
-}
-
-// Converts the given byte array into a ILTag using the specified tag factory.
-// This function fails if the format does not contain a tag or if the data is not
-// fully used by the tag.
-func NewILTagFromBytes(f ILTagFactory, b []byte) (ILTag, error) {
-	r := io.LimitedReader{R: bytes.NewReader(b), N: int64(len(b))}
-	t, err := f.Deserialize(&r)
-	if err != nil {
-		return nil, err
-	} else if r.N == 0 {
-		return t, nil
-	} else {
-		return nil, ErrBadTagFormat
-	}
 }

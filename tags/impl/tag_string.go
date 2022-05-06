@@ -30,27 +30,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package tags
+package impl
 
-import "fmt"
-
-var (
-	// The tag is too large to be manipulated by this library.
-	ErrTagTooLarge = fmt.Errorf("The given tag is too large to be handled by this library.")
-	// Unsupported/unknown tag id.
-	ErrUnsupportedTagId = fmt.Errorf("Unsupported tag ID.")
-	// Bad tag format
-	ErrBadTagFormat = fmt.Errorf("Bad tag format.")
-	// Unexpected tag id.
-	ErrUnexpectedTagId = fmt.Errorf("Unexpected tag ID.")
+import (
+	. "github.com/interlockledger/go-iltags/tags"
 )
 
-// Create a new UnsupportedTagIdError with the specified tag id.
-func NewErrUnsupportedTagId(id TagID) error {
-	return fmt.Errorf("Unsupported tag with id %d: %w", id, ErrUnsupportedTagId)
+// Implementation of the StringTag tag.
+type StringTag struct {
+	ILTagHeaderImpl
+	StringPayload
 }
 
-// Create a new NewErrUnexpectedTagId with the specified tag id.
-func NewErrUnexpectedTagId(expected, id TagID) error {
-	return fmt.Errorf("Expecting tag with id %d but got the id %d: %w", expected, id, ErrUnexpectedTagId)
+// Create a new StringTag.
+func NewStringTag(id TagID) *StringTag {
+	var t StringTag
+	t.SetId(id)
+	return &t
 }

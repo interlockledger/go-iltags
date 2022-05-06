@@ -260,18 +260,3 @@ func NewSignedILIntTag(id TagID) *SignedILIntTag {
 	t.SetId(id)
 	return &t
 }
-
-//------------------------------------------------------------------------------
-
-// Implementation of the StringTag tag.
-type StringTag struct {
-	ILTagHeaderImpl
-	StringPayload
-}
-
-// Create a new StringTag.
-func NewStringTag(id TagID) *StringTag {
-	var t StringTag
-	t.SetId(id)
-	return &t
-}
