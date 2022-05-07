@@ -44,7 +44,7 @@ import (
 
 var (
 	// This error happens when the serialized data format is invalid.
-	ErrSerializationFormat = fmt.Errorf("Invalid UTF-8 string.")
+	ErrSerializationFormat = fmt.Errorf("Bad serialization format.")
 	// This error happens when an UTF-8 string is invalid.
 	ErrBadUTF8String = fmt.Errorf("Invalid UTF-8 string.")
 )
