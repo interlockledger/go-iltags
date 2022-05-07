@@ -50,3 +50,159 @@ func NewRawTag(id TagID) *RawTag {
 	t.SetId(id)
 	return &t
 }
+
+//------------------------------------------------------------------------------
+
+// Implementation of the BytesTag. It is actually an alias to RawTag as both
+// share the same serialization.
+type BytesTag = RawTag
+
+// Create a new BytesTag.
+func NewBytesTag(id TagID) *BytesTag {
+	return NewRawTag(id)
+}
+
+//------------------------------------------------------------------------------
+
+// Implementation of the BigIntTag.
+type BigIntTag struct {
+	ILTagHeaderImpl
+	BigIntPayload
+}
+
+// Create a new RawTag.
+func NewBigIntTag(id TagID) *BigIntTag {
+	var t BigIntTag
+	t.SetId(id)
+	return &t
+}
+
+//------------------------------------------------------------------------------
+
+// Implementation of the BigDecTag.
+type BigDecTag struct {
+	ILTagHeaderImpl
+	BigDecPayload
+}
+
+// Create a new BigDecTag.
+func NewBigDecTag(id TagID) *BigDecTag {
+	var t BigDecTag
+	t.SetId(id)
+	return &t
+}
+
+//------------------------------------------------------------------------------
+
+// Implementation of the ILIntArrayTag.
+type ILIntArrayTag struct {
+	ILTagHeaderImpl
+	ILIntArrayPayload
+}
+
+// Create a new ILIntArrayTag.
+func NewILIntArrayTag(id TagID) *ILIntArrayTag {
+	var t ILIntArrayTag
+	t.SetId(id)
+	return &t
+}
+
+//------------------------------------------------------------------------------
+
+// Implementation of the ILTagArrayTag.
+type ILTagArrayTag struct {
+	ILTagHeaderImpl
+	ILTagArrayPayload
+}
+
+// Create a new ILTagArrayTag.
+func NewILTagArrayTag(id TagID) *ILTagArrayTag {
+	var t ILTagArrayTag
+	t.SetId(id)
+	return &t
+}
+
+//------------------------------------------------------------------------------
+
+// Implementation of the ILTagSequenceTag.
+type ILTagSequenceTag struct {
+	ILTagHeaderImpl
+	ILTagSequencePayload
+}
+
+// Create a new ILTagSequenceTag.
+func NewILTagSequenceTag(id TagID) *ILTagSequenceTag {
+	var t ILTagSequenceTag
+	t.SetId(id)
+	return &t
+}
+
+//------------------------------------------------------------------------------
+
+// Implementation of the RangeTag.
+type RangeTag struct {
+	ILTagHeaderImpl
+	RangePayload
+}
+
+// Create a new RangeTag.
+func NewRangeTag(id TagID) *RangeTag {
+	var t RangeTag
+	t.SetId(id)
+	return &t
+}
+
+//------------------------------------------------------------------------------
+
+// Implementation of the VersionTag.
+type VersionTag struct {
+	ILTagHeaderImpl
+	VersionPayload
+}
+
+// Create a new VersionTag.
+func NewVersionTag(id TagID) *VersionTag {
+	var t VersionTag
+	t.SetId(id)
+	return &t
+}
+
+//------------------------------------------------------------------------------
+
+// Implementation of the OIDTag.
+type OIDTag = ILIntArrayTag
+
+// Create a new OIDTag.
+func NewOIDTag(id TagID) *OIDTag {
+	return NewILIntArrayTag(id)
+}
+
+//------------------------------------------------------------------------------
+
+// Implementation of the StringDictionaryTag.
+type StringDictionaryTag struct {
+	ILTagHeaderImpl
+	StringDictionaryPayload
+}
+
+// Create a new StringDictionaryTag.
+func NewStringDictionaryTag(id TagID) *StringDictionaryTag {
+	var t StringDictionaryTag
+	t.SetId(id)
+	return &t
+}
+
+//------------------------------------------------------------------------------
+
+// Implementation of the ILTagDictionaryTag.
+type ILTagDictionaryTag struct {
+	ILTagHeaderImpl
+	ILTagDictionaryPayload
+}
+
+// Create a new ILTagDictionaryTag.
+func NewILTagDictionaryTag(id TagID) *ILTagDictionaryTag {
+	var t ILTagDictionaryTag
+	t.SetId(id)
+	return &t
+}

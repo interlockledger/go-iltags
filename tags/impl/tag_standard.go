@@ -111,7 +111,127 @@ func NewStdSignedILIntTag() *SignedILIntTag {
 	return NewSignedILIntTag(IL_SIGNED_ILINT_TAG_ID)
 }
 
-// Create a new StringTag.
+// Create a new standard BytesTag.
+func NewStdBytesTag() *RawTag {
+	return NewRawTag(IL_BYTES_TAG_ID)
+}
+
+// Create a new standard StringTag.
 func NewStdStringTag() *StringTag {
 	return NewStringTag(IL_STRING_TAG_ID)
+}
+
+// Create a new standard BigIntTag.
+func NewStdBigIntTag() *BigIntTag {
+	return NewBigIntTag(IL_BINT_TAG_ID)
+}
+
+// Create a new standard BigDecTag.
+func NewStdBigDecTag() *BigDecTag {
+	return NewBigDecTag(IL_BDEC_TAG_ID)
+}
+
+// Create a new standard ILIntArrayTag.
+func NewStdILIntArrayTag() *ILIntArrayTag {
+	return NewILIntArrayTag(IL_ILINTARRAY_TAG_ID)
+}
+
+// Create a new standard ILTagArrayTag.
+func NewStdILTagArrayTag() *ILTagArrayTag {
+	return NewILTagArrayTag(IL_ILTAGARRAY_TAG_ID)
+}
+
+// Create a new standard ILTagSequenceTag.
+func NewStdILTagSequenceTag() *ILTagSequenceTag {
+	return NewILTagSequenceTag(IL_ILTAGSEQ_TAG_ID)
+}
+
+// Create a new standard RangeTag.
+func NewStdRangeTag() *RangeTag {
+	return NewRangeTag(IL_RANGE_TAG_ID)
+}
+
+// Create a new standard VersionTag.
+func NewStdVersionTag() *VersionTag {
+	return NewVersionTag(IL_VERSION_TAG_ID)
+}
+
+// Create a new standard OIDTag.
+func NewStdOIDTag() *OIDTag {
+	return NewOIDTag(IL_OID_TAG_ID)
+}
+
+// Create a new standard DictionaryTag.
+func NewStdDictionaryTag() *DictionaryTag {
+	return NewDictionaryTag(IL_DICTIONARY_TAG_ID)
+}
+
+// Create a new standard StringDictionaryTag.
+func NewStdStringDictionaryTag() *StringDictionaryTag {
+	return NewStringDictionaryTag(IL_STRING_DICTIONARY_TAG_ID)
+}
+
+// Creates a new standard ILTag. It returns an error if the ID is not a standard
+// tag or if the tag is not defined.
+func NewStandardTag(id TagID) (ILTag, error) {
+	var t ILTag
+	switch id {
+	case IL_NULL_TAG_ID:
+		t = NewStdNullTag()
+	case IL_BOOL_TAG_ID:
+		t = NewStdBoolTag()
+	case IL_INT8_TAG_ID:
+		t = NewStdInt8Tag()
+	case IL_UINT8_TAG_ID:
+		t = NewStdUInt8Tag()
+	case IL_INT16_TAG_ID:
+		t = NewStdInt16Tag()
+	case IL_UINT16_TAG_ID:
+		t = NewStdUInt16Tag()
+	case IL_INT32_TAG_ID:
+		t = NewStdInt32Tag()
+	case IL_UINT32_TAG_ID:
+		t = NewStdUInt32Tag()
+	case IL_INT64_TAG_ID:
+		t = NewStdInt64Tag()
+	case IL_UINT64_TAG_ID:
+		t = NewStdUInt64Tag()
+	case IL_ILINT_TAG_ID:
+		t = NewStdILIntTag()
+	case IL_BIN32_TAG_ID:
+		t = NewStdFloat32Tag()
+	case IL_BIN64_TAG_ID:
+		t = NewStdFloat64Tag()
+	case IL_BIN128_TAG_ID:
+		t = NewStdFloat128Tag()
+	case IL_SIGNED_ILINT_TAG_ID:
+		t = NewStdSignedILIntTag()
+	case IL_BYTES_TAG_ID:
+		t = NewStdBytesTag()
+	case IL_STRING_TAG_ID:
+		t = NewStdStringTag()
+	case IL_BINT_TAG_ID:
+		t = NewStdBigIntTag()
+	case IL_BDEC_TAG_ID:
+		t = NewStdBigDecTag()
+	case IL_ILINTARRAY_TAG_ID:
+		t = NewStdILIntArrayTag()
+	case IL_ILTAGARRAY_TAG_ID:
+		t = NewStdILTagArrayTag()
+	case IL_ILTAGSEQ_TAG_ID:
+		t = NewStdILTagSequenceTag()
+	case IL_RANGE_TAG_ID:
+		t = NewStdRangeTag()
+	case IL_VERSION_TAG_ID:
+		t = NewStdVersionTag()
+	case IL_OID_TAG_ID:
+		t = NewStdOIDTag()
+	case IL_DICTIONARY_TAG_ID:
+		t = NewStdDictionaryTag()
+	case IL_STRING_DICTIONARY_TAG_ID:
+		t = NewStdStringDictionaryTag()
+	default:
+		return nil, NewErrUnsupportedTagId(id)
+	}
+	return t, nil
 }

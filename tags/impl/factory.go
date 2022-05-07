@@ -36,47 +36,6 @@ import (
 	. "github.com/interlockledger/go-iltags/tags"
 )
 
-// Creates a new standard ILTag. It returns an error if the ID is not a
-// standard tag or if the tag is not defined.
-func newStandardTag(id TagID) (ILTag, error) {
-	var t ILTag
-	switch id {
-	case IL_NULL_TAG_ID:
-		t = NewNullTag(id)
-	case IL_BOOL_TAG_ID:
-		t = NewBoolTag(id)
-	case IL_INT8_TAG_ID:
-		t = NewInt8Tag(id)
-	case IL_UINT8_TAG_ID:
-		t = NewUInt8Tag(id)
-	case IL_INT16_TAG_ID:
-		t = NewInt16Tag(id)
-	case IL_UINT16_TAG_ID:
-		t = NewUInt16Tag(id)
-	case IL_INT32_TAG_ID:
-		t = NewInt32Tag(id)
-	case IL_UINT32_TAG_ID:
-		t = NewUInt32Tag(id)
-	case IL_INT64_TAG_ID:
-		t = NewInt64Tag(id)
-	case IL_UINT64_TAG_ID:
-		t = NewUInt64Tag(id)
-	case IL_ILINT_TAG_ID:
-		t = NewILIntTag(id)
-	case IL_BIN32_TAG_ID:
-		t = NewFloat32Tag(id)
-	case IL_BIN64_TAG_ID:
-		t = NewFloat64Tag(id)
-	case IL_BIN128_TAG_ID:
-		t = NewFloat128Tag(id)
-	case IL_SIGNED_ILINT_TAG_ID:
-		t = NewSignedILIntTag(id)
-	default:
-		return nil, NewErrUnsupportedTagId(id)
-	}
-	return t, nil
-}
-
 // This is the type of the common interface for all ILTag creators.
 type TagCreatorFunc func(TagID) ILTag
 
@@ -112,7 +71,7 @@ func (f *StandardTagFactory) createTagFromCreators(tagId TagID) (ILTag, error) {
 // if the ID is not supported.
 func (f *StandardTagFactory) CreateTag(tagId TagID) (ILTag, error) {
 	if tagId.Reserved() {
-		return newStandardTag(tagId)
+		return NewStandardTag(tagId)
 	} else {
 		return f.createTagFromCreators(tagId)
 	}

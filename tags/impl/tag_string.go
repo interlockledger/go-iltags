@@ -35,6 +35,7 @@ package impl
 import (
 	"io"
 
+	"github.com/interlockledger/go-iltags/ilint"
 	"github.com/interlockledger/go-iltags/serialization"
 	. "github.com/interlockledger/go-iltags/tags"
 )
@@ -53,7 +54,19 @@ func NewStringTag(id TagID) *StringTag {
 }
 
 /*
-Serializes a string directly into a string tag.
+Returns the size of the string tag that will hold the given string.
+
+This function exists as a faster and more efficient way to deal with string tags
+without using StringTag instances.
+*/
+func StringTagSize(tagId TagID, s string) uint64 {
+	l := len(s)
+	return uint64(ilint.EncodedSize(uint64(tagId)) +
+		ilint.EncodedSize(uint64(l)) + l)
+}
+
+/*
+Serializes a string directly using the StringTag format.
 
 This function exists as a faster and more efficient way to deal with string tags
 without using StringTag instances.
@@ -97,7 +110,14 @@ func DeserializeStringTag(expectedId TagID, reader io.Reader) (string, error) {
 }
 
 /*
-Serializes a string directly into a standard string tag.
+Returns the size of the standard string tag that will hold the given string.
+*/
+func StdStringTagSize(s string) uint64 {
+	return StringTagSize(IL_STRING_TAG_ID, s)
+}
+
+/*
+Serializes a string directly using the standard StringTag format.
 */
 func SerializeStdStringTag(s string, writer io.Writer) error {
 	return SerializeStringTag(IL_STRING_TAG_ID, s, writer)
