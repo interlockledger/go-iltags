@@ -194,15 +194,15 @@ func NewStringDictionaryTag(id TagID) *StringDictionaryTag {
 
 //------------------------------------------------------------------------------
 
-// Implementation of the ILTagDictionaryTag.
-type ILTagDictionaryTag struct {
+// Implementation of the DictionaryTag.
+type DictionaryTag struct {
 	ILTagHeaderImpl
 	ILTagDictionaryPayload
 }
 
 // Create a new ILTagDictionaryTag.
-func NewILTagDictionaryTag(id TagID) *ILTagDictionaryTag {
-	var t ILTagDictionaryTag
+func NewDictionaryTag(id TagID) *DictionaryTag {
+	var t DictionaryTag
 	t.SetId(id)
 	return &t
 }
