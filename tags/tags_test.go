@@ -83,7 +83,12 @@ type mockFactory struct {
 
 func (t *mockFactory) CreateTag(tagId TagID) (ILTag, error) {
 	ret := t.Called(tagId)
-	return ret.Get(0).(ILTag), ret.Error(1)
+	err := ret.Error(1)
+	if err != nil {
+		return nil, err
+	} else {
+		return ret.Get(0).(ILTag), nil
+	}
 }
 
 type mockWriter struct {
@@ -378,12 +383,126 @@ func TestILTagDeserialize(t *testing.T) {
 	// Read Null Tag
 	r := bytes.NewBuffer([]byte{0x00})
 	tag := &mockTag{}
-	tag.On("Id").Return(IL_NULL_TAG_ID)
 	f := &mockFactory{}
+	tag.On("Id").Return(IL_NULL_TAG_ID)
 	f.On("CreateTag", IL_NULL_TAG_ID).Return(tag, nil)
 	nt, err := ILTagDeserialize(f, r)
 	assert.Nil(t, err)
 	assert.Same(t, nt, tag)
 
-	// TODO Continue later
+	// Fail on the ID read
+	r = bytes.NewBuffer([]byte{})
+	tag = &mockTag{}
+	f = &mockFactory{}
+	f.On("CreateTag", IL_NULL_TAG_ID).Return(tag, nil)
+	nt, err = ILTagDeserialize(f, r)
+	assert.ErrorIs(t, err, io.EOF)
+	assert.Nil(t, nt)
+
+	// Bad tag creation
+	r = bytes.NewBuffer([]byte{0x00})
+	tag = &mockTag{}
+	f = &mockFactory{}
+	tag.On("Id").Return(IL_NULL_TAG_ID)
+	f.On("CreateTag", IL_NULL_TAG_ID).Return(nil, ErrUnsupportedTagId)
+	nt, err = ILTagDeserialize(f, r)
+	assert.ErrorIs(t, err, ErrUnsupportedTagId)
+	assert.Nil(t, nt)
+
+	// Bad payload
+	r = bytes.NewBuffer([]byte{0x01})
+	tag = &mockTag{}
+	f = &mockFactory{}
+	tag.On("Id").Return(IL_BOOL_TAG_ID)
+	tag.On("DeserializeValue", f, mock.Anything, mock.Anything).Return(io.ErrUnexpectedEOF)
+	f.On("CreateTag", IL_BOOL_TAG_ID).Return(tag, nil)
+	nt, err = ILTagDeserialize(f, r)
+	assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
+	assert.Nil(t, nt)
+}
+
+func TestILTagDeserializeInto(t *testing.T) {
+
+	// Read Null Tag
+	r := bytes.NewBuffer([]byte{0x00})
+	tag := &mockTag{}
+	f := &mockFactory{}
+	tag.On("Id").Return(IL_NULL_TAG_ID)
+	f.On("CreateTag", IL_NULL_TAG_ID).Return(tag, nil)
+	err := ILTagDeserializeInto(f, r, tag)
+	assert.Nil(t, err)
+
+	// No match
+	r = bytes.NewBuffer([]byte{0x01})
+	tag = &mockTag{}
+	f = &mockFactory{}
+	tag.On("Id").Return(IL_NULL_TAG_ID)
+	f.On("CreateTag", IL_NULL_TAG_ID).Return(tag, nil)
+	err = ILTagDeserializeInto(f, r, tag)
+	assert.ErrorIs(t, err, ErrUnexpectedTagId)
+	assert.ErrorContains(t, err, "Expecting tag with id 1 but got the id 0")
+
+	// Bad header
+	r = bytes.NewBuffer([]byte{})
+	tag = &mockTag{}
+	f = &mockFactory{}
+	tag.On("Id").Return(IL_NULL_TAG_ID)
+	f.On("CreateTag", IL_NULL_TAG_ID).Return(tag, nil)
+	err = ILTagDeserializeInto(f, r, tag)
+	assert.ErrorIs(t, err, io.EOF)
+
+	// Error on unserialize
+	r = bytes.NewBuffer([]byte{0x01})
+	tag = &mockTag{}
+	f = &mockFactory{}
+	tag.On("Id").Return(IL_BOOL_TAG_ID)
+	tag.On("DeserializeValue", f, 1, mock.Anything).Return(nil, ErrBadTagFormat)
+	f.On("CreateTag", IL_BOOL_TAG_ID).Return(tag, nil)
+	err = ILTagDeserializeInto(f, r, tag)
+	assert.ErrorIs(t, err, ErrBadTagFormat)
+}
+
+func TestILTagFromBytes(t *testing.T) {
+
+	// Read Null Tag
+	bin := []byte{0x00}
+	tag := &mockTag{}
+	f := &mockFactory{}
+	tag.On("Id").Return(IL_NULL_TAG_ID)
+	f.On("CreateTag", IL_NULL_TAG_ID).Return(tag, nil)
+	nt, err := ILTagFromBytes(f, bin)
+	assert.Nil(t, err)
+	assert.Same(t, tag, nt)
+
+	// Too much bytes
+	bin = []byte{0x00, 0x01}
+	tag = &mockTag{}
+	f = &mockFactory{}
+	tag.On("Id").Return(IL_NULL_TAG_ID)
+	f.On("CreateTag", IL_NULL_TAG_ID).Return(tag, nil)
+	nt, err = ILTagFromBytes(f, bin)
+	assert.ErrorIs(t, err, ErrBadTagFormat)
+	assert.Nil(t, nt)
+
+	// Too much bytes
+	bin = []byte{0x01}
+	tag = &mockTag{}
+	f = &mockFactory{}
+	tag.On("Id").Return(IL_BOOL_TAG_ID)
+	tag.On("DeserializeValue", f, 1, mock.Anything).Return(nil, ErrBadTagFormat)
+	f.On("CreateTag", IL_BOOL_TAG_ID).Return(tag, nil)
+	nt, err = ILTagFromBytes(f, bin)
+	assert.ErrorIs(t, err, ErrBadTagFormat)
+	assert.Nil(t, nt)
+
+	// Empty
+	bin = []byte{}
+	nt, err = ILTagFromBytes(f, bin)
+	assert.ErrorIs(t, err, ErrBadTagFormat)
+	assert.Nil(t, nt)
+
+	// Nil
+	nt, err = ILTagFromBytes(f, nil)
+	assert.ErrorIs(t, err, ErrBadTagFormat)
+	assert.Nil(t, nt)
 }

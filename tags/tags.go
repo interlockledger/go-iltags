@@ -243,6 +243,9 @@ This function fails if the format does not contain a tag or if the data is not
 fully used by the tag.
 */
 func ILTagFromBytes(factory ILTagFactory, b []byte) (ILTag, error) {
+	if len(b) == 0 {
+		return nil, ErrBadTagFormat
+	}
 	r := io.LimitedReader{R: bytes.NewReader(b), N: int64(len(b))}
 	t, err := ILTagDeserialize(factory, &r)
 	if err != nil {
