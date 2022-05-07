@@ -33,10 +33,98 @@
 package impl
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+/*
+This function asserts if the given structure embeds another directly. This is based on the
+code described here https://stackoverflow.com/questions/61585699/check-if-a-struct-has-struct-embedding-at-run-time
+*/
+func AssertStructEmbeds(actual interface{}, embedded interface{}) bool {
+	embeddedType := reflect.TypeOf(embedded)
+	actualType := reflect.TypeOf(actual)
+	if actualType.Kind() != reflect.Struct {
+		return false
+	}
+	if embeddedType == actualType {
+		return false
+	}
+	for i := 0; i < actualType.NumField(); i++ {
+		f := actualType.Field(i)
+		if f.Anonymous && f.Type == embeddedType {
+			return true
+		}
+	}
+	return false
+}
+
+func TestAssertStructEmbeds(t *testing.T) {
+	type A struct {
+		a int
+	}
+	type B struct {
+		b int
+	}
+	type C struct {
+		A
+	}
+	type D struct {
+		B
+	}
+	type E struct {
+		A
+		B
+	}
+	type F struct {
+		C
+	}
+
+	var a A
+	var b B
+	var c C
+	var d D
+	var e E
+	var f F
+
+	assert.False(t, AssertStructEmbeds(a, a))
+	assert.False(t, AssertStructEmbeds(a, b))
+	assert.False(t, AssertStructEmbeds(a, c))
+	assert.False(t, AssertStructEmbeds(a, d))
+	assert.False(t, AssertStructEmbeds(a, e))
+
+	assert.False(t, AssertStructEmbeds(b, a))
+	assert.False(t, AssertStructEmbeds(b, b))
+	assert.False(t, AssertStructEmbeds(b, c))
+	assert.False(t, AssertStructEmbeds(b, d))
+	assert.False(t, AssertStructEmbeds(b, e))
+
+	assert.True(t, AssertStructEmbeds(c, a))
+	assert.False(t, AssertStructEmbeds(c, b))
+	assert.False(t, AssertStructEmbeds(c, c))
+	assert.False(t, AssertStructEmbeds(c, d))
+	assert.False(t, AssertStructEmbeds(c, e))
+
+	assert.False(t, AssertStructEmbeds(d, a))
+	assert.True(t, AssertStructEmbeds(d, b))
+	assert.False(t, AssertStructEmbeds(d, c))
+	assert.False(t, AssertStructEmbeds(d, d))
+	assert.False(t, AssertStructEmbeds(c, e))
+
+	assert.True(t, AssertStructEmbeds(e, a))
+	assert.True(t, AssertStructEmbeds(e, b))
+	assert.False(t, AssertStructEmbeds(e, c))
+	assert.False(t, AssertStructEmbeds(e, d))
+	assert.False(t, AssertStructEmbeds(c, e))
+
+	assert.False(t, AssertStructEmbeds(f, a))
+	assert.False(t, AssertStructEmbeds(f, b))
+	assert.True(t, AssertStructEmbeds(f, c))
+	assert.False(t, AssertStructEmbeds(f, d))
+	assert.False(t, AssertStructEmbeds(f, e))
+}
 
 func TestRemoveKeyEntry(t *testing.T) {
 	l := []string{"a", "b"}

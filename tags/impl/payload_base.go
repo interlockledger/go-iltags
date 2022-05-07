@@ -34,12 +34,10 @@ package impl
 
 import (
 	"io"
-	"math/big"
 
 	"github.com/interlockledger/go-iltags/ilint"
 	"github.com/interlockledger/go-iltags/serialization"
 	. "github.com/interlockledger/go-iltags/tags"
-	"github.com/interlockledger/go-iltags/utils"
 )
 
 //------------------------------------------------------------------------------
@@ -68,6 +66,9 @@ func (p *RawPayload) SerializeValue(writer io.Writer) error {
 
 // Implementation of ILTagPayload.DeserializeValue()
 func (p *RawPayload) DeserializeValue(factory ILTagFactory, valueSize int, reader io.Reader) error {
+	if valueSize < 0 {
+		return ErrBadTagFormat
+	}
 	p.Payload = make([]byte, valueSize)
 	if valueSize > 0 {
 		return serialization.ReadBytes(reader, p.Payload)
@@ -95,33 +96,44 @@ func (p *StringPayload) SerializeValue(writer io.Writer) error {
 
 // Implementation of ILTagPayload.DeserializeValue()
 func (p *StringPayload) DeserializeValue(factory ILTagFactory, valueSize int, reader io.Reader) error {
-	if s, err := serialization.ReadString(reader, valueSize); err == nil {
-		p.Payload = s
+	if valueSize < 0 {
+		return ErrBadTagFormat
+	} else if valueSize == 0 {
+		p.Payload = ""
 		return nil
 	} else {
-		return err
+		if s, err := serialization.ReadString(reader, valueSize); err == nil {
+			p.Payload = s
+			return nil
+		} else {
+			return err
+		}
 	}
 }
 
 //------------------------------------------------------------------------------
 
-// Implementation of the big int payload. The serialization and deserialization
-// methods of this payload will properly cleanup the temporary buffers whenever
-// possible.
+// Implementation of the big int payload.
 type BigIntPayload struct {
-	Payload big.Int
+	Payload []byte
 }
 
 // Implementation of ILTagPayload.ValueSize().
 func (p *BigIntPayload) ValueSize() uint64 {
-	return uint64((p.Payload.BitLen() + 7) / 8)
+	if l := len(p.Payload); l > 0 {
+		return uint64(l)
+	} else {
+		return 1
+	}
 }
 
 // Implementation of ILTagPayload.SerializeValue()
 func (p *BigIntPayload) SerializeValue(writer io.Writer) error {
-	tmp := p.Payload.Bytes()
-	defer utils.ShredBytes(tmp)
-	return serialization.WriteBytes(writer, tmp)
+	if len(p.Payload) != 0 {
+		return serialization.WriteBytes(writer, p.Payload)
+	} else {
+		return serialization.WriteBytes(writer, []byte{0})
+	}
 }
 
 // Implementation of ILTagPayload.DeserializeValue()
@@ -129,21 +141,13 @@ func (p *BigIntPayload) DeserializeValue(factory ILTagFactory, valueSize int, re
 	if valueSize < 1 {
 		return ErrBadTagFormat
 	}
-	tmp := make([]byte, valueSize)
-	defer utils.ShredBytes(tmp)
-	err := serialization.ReadBytes(reader, tmp)
-	if err != nil {
-		return err
-	}
-	p.Payload.SetBytes(tmp)
-	return nil
+	p.Payload = make([]byte, valueSize)
+	return serialization.ReadBytes(reader, p.Payload)
 }
 
 //------------------------------------------------------------------------------
 
-// Implementation of the big decimal payload. The serialization and deserialization
-// methods of this payload will properly cleanup the temporary buffers whenever
-// possible.
+// Implementation of the big decimal payload.
 type BigDecPayload struct {
 	BigIntPayload
 	Scale int32
@@ -188,9 +192,6 @@ type ILIntArrayPayload struct {
 
 // Implementation of ILTagPayload.ValueSize().
 func (p *ILIntArrayPayload) ValueSize() uint64 {
-	if p.Payload == nil {
-		return 0
-	}
 	size := ilint.EncodedSize(uint64(len(p.Payload)))
 	for _, v := range p.Payload {
 		size += ilint.EncodedSize(v)
@@ -200,7 +201,7 @@ func (p *ILIntArrayPayload) ValueSize() uint64 {
 
 // Implementation of ILTagPayload.SerializeValue()
 func (p *ILIntArrayPayload) SerializeValue(writer io.Writer) error {
-	if p.Payload == nil {
+	if len(p.Payload) == 0 {
 		return serialization.WriteUInt8(writer, 0)
 	}
 	if err := serialization.WriteILInt(writer, uint64(len(p.Payload))); err != nil {

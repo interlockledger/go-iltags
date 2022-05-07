@@ -39,20 +39,7 @@ import (
 	"github.com/interlockledger/go-iltags/ilint"
 	. "github.com/interlockledger/go-iltags/tags"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
-
-//------------------------------------------------------------------------------
-type mockFactory struct {
-	mock.Mock
-}
-
-func (f *mockFactory) CreateTag(tagId TagID) (ILTag, error) {
-	arg := f.Called(tagId)
-	return arg.Get(0).(ILTag), arg.Error(1)
-}
-
-//------------------------------------------------------------------------------
 
 func TestNullPayload(t *testing.T) {
 	var _ ILTagPayload = (*NullPayload)(nil)
