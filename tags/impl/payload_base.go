@@ -263,8 +263,8 @@ type ILTagArrayPayload struct {
 
 // Implementation of ILTagPayload.ValueSize().
 func (p *ILTagArrayPayload) ValueSize() uint64 {
-	if p.Payload == nil {
-		return 0
+	if len(p.Payload) == 0 {
+		return 1
 	}
 	size := ilint.EncodedSize(uint64(len(p.Payload)))
 	for _, v := range p.Payload {
@@ -362,18 +362,24 @@ func (p *ILTagSequencePayload) SerializeValue(writer io.Writer) error {
 
 // Implementation of ILTagPayload.DeserializeValue()
 func (p *ILTagSequencePayload) DeserializeValue(factory ILTagFactory, valueSize int, reader io.Reader) error {
-	r := io.LimitedReader{R: reader, N: int64(valueSize)}
-
-	a := make([]ILTag, 0, 16)
-	for {
-		if v, err := ILTagDeserialize(factory, &r); err != nil {
-			return err
-		} else {
-			a = append(a, v)
-		}
-		if r.N == 0 {
-			p.Payload = a
-			return nil
+	if valueSize < 0 {
+		return ErrBadTagFormat
+	} else if valueSize == 0 {
+		p.Payload = make([]ILTag, 0)
+		return nil
+	} else {
+		r := io.LimitedReader{R: reader, N: int64(valueSize)}
+		a := make([]ILTag, 0, 16)
+		for {
+			if v, err := ILTagDeserialize(factory, &r); err != nil {
+				return err
+			} else {
+				a = append(a, v)
+			}
+			if r.N == 0 {
+				p.Payload = a
+				return nil
+			}
 		}
 	}
 }
@@ -388,7 +394,7 @@ type RangePayload struct {
 
 // Implementation of ILTagPayload.ValueSize().
 func (p *RangePayload) ValueSize() uint64 {
-	return uint64(ilint.EncodedSize(p.Start)) + 4
+	return uint64(ilint.EncodedSize(p.Start)) + 2
 }
 
 // Implementation of ILTagPayload.SerializeValue()
@@ -405,7 +411,7 @@ func (p *RangePayload) SerializeValue(writer io.Writer) error {
 
 // Implementation of ILTagPayload.DeserializeValue()
 func (p *RangePayload) DeserializeValue(factory ILTagFactory, valueSize int, reader io.Reader) error {
-	if valueSize < 5 {
+	if valueSize < 3 {
 		return ErrBadTagFormat
 	}
 	r := io.LimitedReader{R: reader, N: int64(valueSize)}
