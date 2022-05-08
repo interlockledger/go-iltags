@@ -34,13 +34,10 @@ package impl
 
 import (
 	"bytes"
-	"fmt"
 	"io"
-	"math/rand"
 	"testing"
 
 	"github.com/interlockledger/go-iltags/ilint"
-	"github.com/interlockledger/go-iltags/serialization"
 	. "github.com/interlockledger/go-iltags/tags"
 	"github.com/stretchr/testify/assert"
 )
@@ -258,18 +255,6 @@ func TestBigDecPayload(t *testing.T) {
 	assert.ErrorIs(t, tag.DeserializeValue(f, 0, r), ErrBadTagFormat)
 }
 
-func CreateSampleILInt64Array(n int) ([]uint64, []byte) {
-	l := make([]uint64, n)
-	b := bytes.NewBuffer(nil)
-	for i := 0; i < n; i++ {
-		l[i] = rand.Uint64()
-		if err := serialization.WriteILInt(b, l[i]); err != nil {
-			panic("Unable to serialize the ILInt")
-		}
-	}
-	return l, b.Bytes()
-}
-
 func TestILIntArrayPayload(t *testing.T) {
 	var _ ILTagPayload = (*ILIntArrayPayload)(nil)
 
@@ -344,33 +329,6 @@ func TestILIntArrayPayload(t *testing.T) {
 	assert.Error(t, tag.DeserializeValue(f, 2, r))
 
 	assert.ErrorIs(t, tag.DeserializeValue(f, 0, r), ErrBadTagFormat)
-}
-
-func CreateSampleILTagArray(n int) ([]ILTag, []byte) {
-	l := make([]ILTag, n)
-	b := bytes.NewBuffer(nil)
-	for i := 0; i < n; i++ {
-		var t ILTag
-		switch i % 3 {
-		case 0:
-			r := NewStdBoolTag()
-			r.Payload = rand.Int()&0x1 == 0
-			t = r
-		case 1:
-			r := NewStdFloat32Tag()
-			r.Payload = rand.Float32()
-			t = r
-		case 2:
-			r := NewStdStringTag()
-			r.Payload = fmt.Sprintf("%d", rand.Uint64())
-			t = r
-		}
-		l[i] = t
-		if err := ILTagSeralize(t, b); err != nil {
-			panic("Unable to serialize the ILTag")
-		}
-	}
-	return l, b.Bytes()
 }
 
 func TestILTagArrayPayload(t *testing.T) {
@@ -558,4 +516,57 @@ func TestRangePayload(t *testing.T) {
 	assert.Error(t, tag.DeserializeValue(f, 3, r))
 
 	assert.ErrorIs(t, tag.DeserializeValue(f, 2, r), ErrBadTagFormat)
+}
+
+func TestVersionPayload(t *testing.T) {
+	var _ ILTagPayload = (*VersionPayload)(nil)
+	var tag VersionPayload
+	enc := []byte{
+		0x00, 0x00, 0x01, 0x23,
+		0x00, 0x00, 0x45, 0x67,
+		0x00, 0x00, 0x89, 0xAB,
+		0x00, 0x00, 0xCD, 0xEF}
+
+	// Size
+	assert.Equal(t, uint64(16), tag.ValueSize())
+
+	// Serialize
+	w := bytes.NewBuffer(nil)
+	tag.Major = int32(0x0123)
+	tag.Minor = int32(0x4567)
+	tag.Revision = int32(0x89AB)
+	tag.Build = int32(0xCDEF)
+	assert.Nil(t, tag.SerializeValue(w))
+	assert.Equal(t, enc, w.Bytes())
+
+	w = bytes.NewBuffer(nil)
+	tag.Major = 0
+	tag.Minor = 0
+	tag.Revision = 0
+	tag.Build = 0
+	assert.Nil(t, tag.SerializeValue(w))
+	assert.Equal(t,
+		make([]byte, 16), w.Bytes())
+
+	for i := 1; i < 16; i += 4 {
+		lw := &limitedDummyWriter{int64(i)}
+		assert.Error(t, tag.SerializeValue(lw))
+	}
+
+	// Deserialize
+	r := bytes.NewReader(enc)
+	f := &mockFactory{}
+
+	assert.Nil(t, tag.DeserializeValue(f, 16, r))
+	assert.Equal(t, int32(0x0123), tag.Major)
+	assert.Equal(t, int32(0x4567), tag.Minor)
+	assert.Equal(t, int32(0x89AB), tag.Revision)
+	assert.Equal(t, int32(0xCDEF), tag.Build)
+
+	for i := 1; i < 16; i += 4 {
+		r = bytes.NewReader(enc[:i])
+		assert.Error(t, tag.DeserializeValue(f, 16, r))
+	}
+	assert.ErrorIs(t, tag.DeserializeValue(f, 15, r), ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 17, r), ErrBadTagFormat)
 }
