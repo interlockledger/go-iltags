@@ -196,44 +196,46 @@ func TestStableStringMap(t *testing.T) {
 func TestStableILTagMap(t *testing.T) {
 	var m StableILTagMap
 
+	a := NewStringTag(32)
+	b := NewStringTag(33)
+	c := NewStringTag(34)
+
 	assert.Nil(t, m.entries)
 	assert.Nil(t, m.keys)
 	assert.Equal(t, 0, m.Size())
 
-	v := NewStringTag(32)
-	m.Put("b", v)
+	m.Put("b", b)
 	assert.Equal(t, 1, m.Size())
 	assert.Equal(t, []string{"b"}, m.keys)
 	s, ok := m.Get("b")
 	assert.True(t, ok)
-	assert.Same(t, v, s)
+	assert.Same(t, b, s)
 
-	/*
-		m.Put("a", "A")
-		assert.Equal(t, 2, m.Size())
-		assert.Equal(t, []string{"b", "a"}, m.keys)
-		s, ok = m.Get("a")
-		assert.True(t, ok)
-		assert.Equal(t, "A", s)
+	m.Put("a", a)
+	assert.Equal(t, 2, m.Size())
+	assert.Equal(t, []string{"b", "a"}, m.keys)
+	s, ok = m.Get("a")
+	assert.True(t, ok)
+	assert.Equal(t, a, s)
 
-		m.Put("b", "C")
-		assert.Equal(t, 2, m.Size())
-		assert.Equal(t, []string{"b", "a"}, m.keys)
-		s, ok = m.Get("b")
-		assert.True(t, ok)
-		assert.Equal(t, "C", s)
+	m.Put("b", c)
+	assert.Equal(t, 2, m.Size())
+	assert.Equal(t, []string{"b", "a"}, m.keys)
+	s, ok = m.Get("b")
+	assert.True(t, ok)
+	assert.Equal(t, c, s)
 
-		m.Remove("a")
-		assert.Equal(t, 1, m.Size())
-		assert.Equal(t, []string{"b"}, m.keys)
-		s, ok = m.Get("a")
-		assert.False(t, ok)
-		assert.Equal(t, "", s)
+	m.Remove("a")
+	assert.Equal(t, 1, m.Size())
+	assert.Equal(t, []string{"b"}, m.keys)
+	s, ok = m.Get("a")
+	assert.False(t, ok)
+	assert.Nil(t, s)
 
-		m.Clear()
-		assert.Nil(t, m.entries)
-		assert.Nil(t, m.keys)
-	*/
+	m.Clear()
+	assert.Nil(t, m.entries)
+	assert.Nil(t, m.keys)
+
 }
 
 // Creates a list of random uint64 values and its serialization as a sequence of
