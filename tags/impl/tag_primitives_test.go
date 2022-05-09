@@ -41,7 +41,3 @@ import (
 func TestNullTag(t *testing.T) {
 	var _ ILTag = (*NullTag)(nil)
 }
-
-func TestStringTag(t *testing.T) {
-	var _ ILTag = (*StringTag)(nil)
-}

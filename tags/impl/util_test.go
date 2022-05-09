@@ -37,7 +37,9 @@ import (
 	"fmt"
 	"math/rand"
 	"reflect"
+	"strings"
 	"testing"
+	"unicode/utf8"
 
 	"github.com/interlockledger/go-iltags/serialization"
 	. "github.com/interlockledger/go-iltags/tags"
@@ -276,16 +278,31 @@ func CreateSampleILInt64Array(n int) ([]uint64, []byte) {
 	return l, b.Bytes()
 }
 
+// Generates a random unicode string.
+func GenerateRandomString() string {
+
+	n := rand.Int()&0x1F + 1
+	b := strings.Builder{}
+	for i := 0; i < n; i++ {
+		r := rune(rand.Int() & 0x7FFF)
+		for !utf8.ValidRune(r) {
+			r = rune(rand.Int() & 0xFFFF)
+		}
+		b.WriteRune(r)
+	}
+	return b.String()
+}
+
 // Creates a list of unique random strings.
 func CreateUniqueStringArray(n int) []string {
 
 	l := make([]string, n)
-	dl := make(map[uint64]bool, n)
+	dl := make(map[string]bool, n)
 	for i := 0; i < n; i++ {
-		c := rand.Uint64()
-		if _, ok := dl[c]; !ok {
-			dl[c] = true
-			l[i] = fmt.Sprintf("%d", c)
+		s := GenerateRandomString()
+		if _, ok := dl[s]; !ok {
+			dl[s] = true
+			l[i] = s
 		}
 	}
 	return l
