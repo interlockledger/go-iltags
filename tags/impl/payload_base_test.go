@@ -38,8 +38,10 @@ import (
 	"testing"
 
 	"github.com/interlockledger/go-iltags/ilint"
+	"github.com/interlockledger/go-iltags/serialization"
 	. "github.com/interlockledger/go-iltags/tags"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 type limitedDummyWriter struct {
@@ -569,4 +571,182 @@ func TestVersionPayload(t *testing.T) {
 	}
 	assert.ErrorIs(t, tag.DeserializeValue(f, 15, r), ErrBadTagFormat)
 	assert.ErrorIs(t, tag.DeserializeValue(f, 17, r), ErrBadTagFormat)
+}
+
+func TestStringDictionaryPayload(t *testing.T) {
+	var _ ILTagPayload = (*StringDictionaryPayload)(nil)
+	sample, binSample := CreateSampleStringArray(512)
+	encoded := append(ilint.Encode(uint64(len(sample)/2), nil), binSample...)
+
+	var tag StringDictionaryPayload
+
+	// Size
+	assert.Equal(t, uint64(1), tag.ValueSize())
+	for i := 0; i < len(sample)/2; i++ {
+		tag.Map.Put(sample[i*2], sample[i*2+1])
+	}
+	assert.Equal(t, uint64(len(encoded)), tag.ValueSize())
+
+	// Serialize
+	tag.Map.Clear()
+	w := bytes.NewBuffer(nil)
+	assert.Nil(t, tag.SerializeValue(w))
+	assert.Equal(t, []byte{0x00}, w.Bytes())
+
+	for i := 0; i < len(sample)/2; i++ {
+		tag.Map.Put(sample[i*2], sample[i*2+1])
+	}
+	w = bytes.NewBuffer(nil)
+	assert.Nil(t, tag.SerializeValue(w))
+	assert.Equal(t, encoded, w.Bytes())
+
+	tag.Map.Clear()
+	tag.Map.Put("a1", "a2")
+
+	we := &limitedDummyWriter{N: 0}
+	assert.Error(t, tag.SerializeValue(we))
+	we = &limitedDummyWriter{N: 1}
+	assert.Error(t, tag.SerializeValue(we))
+	we = &limitedDummyWriter{N: 5}
+	assert.Error(t, tag.SerializeValue(we))
+
+	// Deserialize
+	f := NewStandardTagFactory(false)
+
+	tag.Map.Clear()
+	r := bytes.NewReader([]byte{0x00})
+	assert.Nil(t, tag.DeserializeValue(f, 1, r))
+	assert.Equal(t, 0, tag.Map.Size())
+
+	tag.Map.Clear()
+	r = bytes.NewReader(encoded)
+	assert.Nil(t, tag.DeserializeValue(f, len(encoded), r))
+	assert.Equal(t, 256, tag.Map.Size())
+	for i := 0; i < 256; i++ {
+		k := sample[i*2]
+		v := sample[i*2+1]
+		assert.Equal(t, k, tag.Map.Keys()[i])
+		vc, ok := tag.Map.Get(k)
+		assert.True(t, ok)
+		assert.Equal(t, v, vc)
+	}
+
+	// Deserialization failures
+	encoded = []byte{0x01, 0x11, 0x00, 0x11, 0x00} // 1 entry with 2 empty strings
+
+	r = bytes.NewReader(encoded[:0])
+	assert.Error(t, tag.DeserializeValue(f, len(encoded), r))
+	r = bytes.NewReader(encoded[:1])
+	assert.Error(t, tag.DeserializeValue(f, len(encoded), r))
+	r = bytes.NewReader(encoded[:4])
+	assert.Error(t, tag.DeserializeValue(f, len(encoded), r))
+
+	r = bytes.NewReader(encoded[:1])
+	assert.Error(t, tag.DeserializeValue(f, len(encoded), r))
+
+	// Too large
+	r = bytes.NewReader(encoded)
+	assert.Error(t, tag.DeserializeValue(f, len(encoded)+1, r))
+
+	// More entries than bytes
+	r = bytes.NewReader(encoded)
+	assert.ErrorIs(t, tag.DeserializeValue(f, len(encoded)-1, r), ErrBadTagFormat)
+
+	// Bad size
+	assert.ErrorIs(t, tag.DeserializeValue(f, 0, r), ErrBadTagFormat)
+}
+
+func TestDictionaryPayload(t *testing.T) {
+	var _ ILTagPayload = (*DictionaryPayload)(nil)
+	sampleKeys, _ := CreateSampleStringArray(256)
+	sampleObjects, _ := CreateSampleILTagArray(256)
+
+	b := bytes.NewBuffer(nil)
+	require.Nil(t, serialization.WriteILInt(b, uint64(len(sampleKeys))))
+	for i := 0; i < len(sampleKeys); i++ {
+		k := sampleKeys[i]
+		v := sampleObjects[i]
+		require.Nil(t, SerializeStdStringTag(k, b))
+		require.Nil(t, ILTagSeralize(v, b))
+	}
+	encoded := b.Bytes()
+
+	// Size
+	var tag DictionaryPayload
+	assert.Equal(t, uint64(1), tag.ValueSize())
+	for i := 0; i < len(sampleKeys); i++ {
+		k := sampleKeys[i]
+		v := sampleObjects[i]
+		tag.Map.Put(k, v)
+	}
+	assert.Equal(t, uint64(len(encoded)), tag.ValueSize())
+
+	// Serialize
+	tag.Map.Clear()
+	w := bytes.NewBuffer(nil)
+	assert.Nil(t, tag.SerializeValue(w))
+	assert.Equal(t, []byte{0x00}, w.Bytes())
+
+	for i := 0; i < len(sampleKeys); i++ {
+		k := sampleKeys[i]
+		v := sampleObjects[i]
+		tag.Map.Put(k, v)
+	}
+	w = bytes.NewBuffer(nil)
+	assert.Nil(t, tag.SerializeValue(w))
+	assert.Equal(t, encoded, w.Bytes())
+
+	tag.Map.Clear()
+	tag.Map.Put("a1", NewStdNullTag()) // 1 + (1 + 1 + 2) + (1)
+	we := &limitedDummyWriter{N: 0}
+	assert.Error(t, tag.SerializeValue(we))
+	we = &limitedDummyWriter{N: 1}
+	assert.Error(t, tag.SerializeValue(we))
+	we = &limitedDummyWriter{N: 5}
+	assert.Error(t, tag.SerializeValue(we))
+
+	// Deserialize
+	f := NewStandardTagFactory(false)
+	tag.Map.Clear()
+	r := bytes.NewReader([]byte{0x00})
+	assert.Nil(t, tag.DeserializeValue(f, 1, r))
+	assert.Equal(t, 0, tag.Map.Size())
+
+	tag.Map.Clear()
+	r = bytes.NewReader(encoded)
+	assert.Nil(t, tag.DeserializeValue(f, len(encoded), r))
+	assert.Equal(t, 256, tag.Map.Size())
+	for i := 0; i < len(sampleKeys); i++ {
+		k := sampleKeys[i]
+		v := sampleObjects[i]
+		assert.Equal(t, k, tag.Map.Keys()[i])
+		vc, ok := tag.Map.Get(k)
+		assert.True(t, ok)
+		assert.Equal(t, v, vc)
+	}
+
+	// Deserialization failures
+	encoded = []byte{0x01, 0x11, 0x00, 0x11, 0x00} // 1 entry with 2 empty strings
+
+	r = bytes.NewReader(encoded[:0])
+	assert.Error(t, tag.DeserializeValue(f, len(encoded), r))
+	r = bytes.NewReader(encoded[:1])
+	assert.Error(t, tag.DeserializeValue(f, len(encoded), r))
+	r = bytes.NewReader(encoded[:4])
+	assert.Error(t, tag.DeserializeValue(f, len(encoded), r))
+
+	r = bytes.NewReader(encoded[:1])
+	assert.Error(t, tag.DeserializeValue(f, len(encoded), r))
+
+	// Too large
+	r = bytes.NewReader(encoded)
+	assert.Error(t, tag.DeserializeValue(f, len(encoded)+1, r))
+
+	// More entries than bytes
+	encoded = []byte{0x01, 0x11, 0x00, 0x00} // 1 entry with 1 empty and a null tag
+	r = bytes.NewReader(encoded)
+	assert.ErrorIs(t, tag.DeserializeValue(f, len(encoded)-1, r), ErrBadTagFormat)
+
+	// Bad size
+	assert.ErrorIs(t, tag.DeserializeValue(f, 0, r), ErrBadTagFormat)
 }

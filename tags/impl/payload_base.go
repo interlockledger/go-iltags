@@ -503,7 +503,7 @@ type StringDictionaryPayload struct {
 
 // Implementation of ILTagPayload.ValueSize().
 func (p *StringDictionaryPayload) ValueSize() uint64 {
-	size := uint64(p.Map.Size())
+	size := uint64(ilint.EncodedSize(uint64(p.Map.Size())))
 	for _, k := range p.Map.Keys() {
 		size += StdStringTagSize(k)
 		v, _ := p.Map.Get(k)
@@ -535,10 +535,11 @@ func (p *StringDictionaryPayload) DeserializeValue(factory ILTagFactory, valueSi
 	if valueSize < 1 {
 		return ErrBadTagFormat
 	}
+	p.Map.Clear()
 	r := &io.LimitedReader{R: reader, N: int64(valueSize)}
 	// Deserialize...
 	if err := p.deserializeValueCore(r); err != nil {
-		return nil
+		return err
 	}
 	// Check if something is left in the payload
 	if r.N != 0 {
@@ -553,10 +554,12 @@ func (p *StringDictionaryPayload) deserializeValueCore(reader *io.LimitedReader)
 	if err != nil {
 		return ErrBadTagFormat
 	}
-	if size > uint64(reader.N) {
+	if size > uint64(reader.N/(2+2)) {
+		// The maximum number of entries that can fit in N bytes is
+		// remaining / (minStringTagSize + minStringTagSize) where
+		// minStringTagSize is 2 (standard string tag size storing "")
 		return ErrBadTagFormat
 	}
-	p.Map.Clear()
 	for i := 0; i < int(size); i++ {
 		k, err := DeserializeStdStringTag(reader)
 		if err != nil {
@@ -580,7 +583,7 @@ type DictionaryPayload struct {
 
 // Implementation of ILTagPayload.ValueSize().
 func (p *DictionaryPayload) ValueSize() uint64 {
-	size := uint64(p.Map.Size())
+	size := uint64(ilint.EncodedSize(uint64(p.Map.Size())))
 	for _, k := range p.Map.Keys() {
 		size += StdStringTagSize(k)
 		t, _ := p.Map.Get(k)
@@ -615,7 +618,7 @@ func (p *DictionaryPayload) DeserializeValue(factory ILTagFactory, valueSize int
 	r := &io.LimitedReader{R: reader, N: int64(valueSize)}
 	// Deserialize...
 	if err := p.deserializeValueCore(factory, r); err != nil {
-		return nil
+		return err
 	}
 	// Check if something is left in the payload
 	if r.N != 0 {
@@ -630,7 +633,10 @@ func (p *DictionaryPayload) deserializeValueCore(factory ILTagFactory, reader *i
 	if err != nil {
 		return ErrBadTagFormat
 	}
-	if size > uint64(reader.N) {
+	if size > uint64(reader.N/(2+1)) {
+		// The maximum number of entries that can fit in N bytes is
+		// remaining / (minStringTagSize + minTagSize) where
+		// minStringTagSize is 2 and minTagSize is 1 (standard string tag size storing "")
 		return ErrBadTagFormat
 	}
 	p.Map.Clear()

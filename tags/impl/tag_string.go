@@ -99,6 +99,9 @@ func DeserializeStringTag(expectedId TagID, reader io.Reader) (string, error) {
 		return "", NewErrUnexpectedTagId(expectedId, TagID(id))
 	}
 	size, err := serialization.ReadILInt(reader)
+	if err != nil {
+		return "", err
+	}
 	if size > MAX_TAG_SIZE {
 		return "", ErrTagTooLarge
 	}

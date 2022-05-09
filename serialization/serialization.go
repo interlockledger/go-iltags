@@ -330,6 +330,9 @@ Reads an UTF-8 string. If fails if it is not possible to read all bytes or the
 data read is not a valid UTF-8 string.
 */
 func ReadString(reader io.Reader, size int) (string, error) {
+	if size == 0 {
+		return "", nil
+	}
 	buff := make([]byte, size)
 	if err := ReadBytes(reader, buff); err != nil {
 		return "", err

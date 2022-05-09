@@ -135,7 +135,8 @@ func TestDeserializeStringTag(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, "", a)
 
-		re = bytes.NewReader(serialized[:idSize+sizeSize-1])
+		// Truncate the last byte
+		re = bytes.NewReader(serialized[:idSize+sizeSize-2])
 		a, err = DeserializeStringTag(id, re)
 		assert.Error(t, err)
 		assert.Equal(t, "", a)
