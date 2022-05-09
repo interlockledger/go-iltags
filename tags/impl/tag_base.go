@@ -197,7 +197,7 @@ func NewStringDictionaryTag(id TagID) *StringDictionaryTag {
 // Implementation of the DictionaryTag.
 type DictionaryTag struct {
 	ILTagHeaderImpl
-	ILTagDictionaryPayload
+	DictionaryPayload
 }
 
 // Create a new ILTagDictionaryTag.
