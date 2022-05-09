@@ -39,11 +39,17 @@ import (
 // This is the type of the common interface for all ILTag creators.
 type TagCreatorFunc func(TagID) ILTag
 
-// Standard tag factory.
+// Standard tag factory. At general, instances of this struct can be considred
+// thread safe if if is acessed ILTag
 type StandardTagFactory struct {
 	// Strict mode. If true, unknown tags will result in an Ir true
 	Strict      bool
 	tagCreators map[TagID]TagCreatorFunc
+}
+
+// Creates a new StandardTagFactory instance.
+func NewStandardTagFactory(strict bool) *StandardTagFactory {
+	return &StandardTagFactory{Strict: strict}
 }
 
 // Registers a custom tag creator for the given Tag ID. Only non reserved ids
@@ -51,6 +57,9 @@ type StandardTagFactory struct {
 func (f *StandardTagFactory) RegisterTag(tagId TagID, tagCreator TagCreatorFunc) {
 	if tagId.Reserved() {
 		panic("Reserved tags cannot be overriden.")
+	}
+	if f.tagCreators == nil {
+		f.tagCreators = make(map[TagID]TagCreatorFunc, 8)
 	}
 	f.tagCreators[tagId] = tagCreator
 }
