@@ -47,48 +47,48 @@ func NewStdBoolTag() *BoolTag {
 }
 
 // Create a new standard UInt8Tag.
-func NewStdInt8Tag() *UInt8Tag {
+func NewStdUInt8Tag() *UInt8Tag {
 	return NewUInt8Tag(IL_UINT8_TAG_ID)
 }
 
 // Create a new standard UInt8Tag.
-func NewStdUInt8Tag() *Int8Tag {
+func NewStdInt8Tag() *Int8Tag {
 	return NewInt8Tag(IL_INT8_TAG_ID)
 }
 
 // Create a new standard UInt16Tag.
-func NewStdInt16Tag() *UInt16Tag {
+func NewStdUInt16Tag() *UInt16Tag {
 	return NewUInt16Tag(IL_UINT16_TAG_ID)
 }
 
 // Create a new standard UInt16Tag.
-func NewStdUInt16Tag() *Int16Tag {
+func NewStdInt16Tag() *Int16Tag {
 	return NewInt16Tag(IL_INT16_TAG_ID)
 }
 
 // Create a new standard UInt32Tag.
-func NewStdInt32Tag() *UInt32Tag {
+func NewStdUInt32Tag() *UInt32Tag {
 	return NewUInt32Tag(IL_UINT32_TAG_ID)
 }
 
-// Create a new standard UInt32Tag.
-func NewStdUInt32Tag() *Int32Tag {
+// Create a new standard Int32Tag.
+func NewStdInt32Tag() *Int32Tag {
 	return NewInt32Tag(IL_INT32_TAG_ID)
 }
 
 // Create a new standard UInt64Tag.
-func NewStdInt64Tag() *UInt64Tag {
+func NewStdUInt64Tag() *UInt64Tag {
 	return NewUInt64Tag(IL_UINT64_TAG_ID)
 }
 
-// Create a new standard UInt64Tag.
-func NewStdUInt64Tag() *Int64Tag {
+// Create a new standard Int64Tag.
+func NewStdInt64Tag() *Int64Tag {
 	return NewInt64Tag(IL_INT64_TAG_ID)
 }
 
 // Create a new standard ILIntTag.
 func NewStdILIntTag() *ILIntTag {
-	return NewILIntTag(IL_UINT64_TAG_ID)
+	return NewILIntTag(IL_ILINT_TAG_ID)
 }
 
 // Create a new standard Float32Tag.
