@@ -589,3 +589,296 @@ func TestILIntArrayTagReference(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, tag)
 }
+
+func TestILTagArrayTagReference(t *testing.T) {
+
+	serialized := []byte{
+		0x15, // ID
+		0x01, // Size
+		0x00, // Payload
+	}
+	r := bytes.NewReader(serialized)
+	tag, err := ILTagDeserialize(testTagFactory, r)
+	assert.Nil(t, err)
+	assert.Equal(t, IL_ILTAGARRAY_TAG_ID, tag.Id())
+	assert.IsType(t, &ILTagArrayTag{}, tag)
+	assert.Equal(t, []ILTag{}, tag.(*ILTagArrayTag).Payload)
+	w := bytes.NewBuffer([]byte{})
+	assert.Nil(t, ILTagSeralize(tag, w))
+	assert.Equal(t, serialized, w.Bytes())
+
+	serialized = []byte{
+		0x15,       // ID
+		0x07,       // Size
+		0x03,       // Count
+		0x00,       // NullTag
+		0x01, 0x00, // Bool tag
+		0x04, 0x00, 0x00, // Int16 tag
+	}
+	r = bytes.NewReader(serialized)
+	tag, err = ILTagDeserialize(testTagFactory, r)
+	assert.Nil(t, err)
+	assert.Equal(t, IL_ILTAGARRAY_TAG_ID, tag.Id())
+	assert.IsType(t, &ILTagArrayTag{}, tag)
+	exp := []ILTag{
+		NewStdNullTag(),
+		NewStdBoolTag(),
+		NewStdInt16Tag()}
+	assert.Equal(t, exp, tag.(*ILTagArrayTag).Payload)
+
+	serialized = append(
+		[]byte{
+			0x15,       // ID
+			0xF8, 0x0A, // Size
+			0xF8, 0x08, // Count
+		},
+		make([]byte, 256)...)
+	r = bytes.NewReader(serialized)
+	tag, err = ILTagDeserialize(testTagFactory, r)
+	assert.Nil(t, err)
+	assert.Equal(t, IL_ILTAGARRAY_TAG_ID, tag.Id())
+	assert.IsType(t, &ILTagArrayTag{}, tag)
+	exp = make([]ILTag, 256)
+	for i := 0; i < 256; i++ {
+		exp[i] = NewStdNullTag()
+	}
+	assert.Equal(t, exp, tag.(*ILTagArrayTag).Payload)
+	w = bytes.NewBuffer(nil)
+	assert.Nil(t, ILTagSeralize(tag, w))
+	assert.Equal(t, serialized, w.Bytes())
+
+	serialized = []byte{
+		0x15, // ID
+		0x00, // Size
+	}
+	r = bytes.NewReader(serialized)
+	tag, err = ILTagDeserialize(testTagFactory, r)
+	assert.Error(t, err)
+	assert.Nil(t, tag)
+}
+
+func TestILTagSequenceTagReference(t *testing.T) {
+
+	serialized := []byte{
+		0x16, // ID
+		0x00, // Size
+	}
+	r := bytes.NewReader(serialized)
+	tag, err := ILTagDeserialize(testTagFactory, r)
+	assert.Nil(t, err)
+	assert.Equal(t, IL_ILTAGSEQ_TAG_ID, tag.Id())
+	assert.IsType(t, &ILTagSequenceTag{}, tag)
+	assert.Equal(t, []ILTag{}, tag.(*ILTagSequenceTag).Payload)
+	w := bytes.NewBuffer([]byte{})
+	assert.Nil(t, ILTagSeralize(tag, w))
+	assert.Equal(t, serialized, w.Bytes())
+
+	serialized = []byte{
+		0x16,       // ID
+		0x06,       // Size
+		0x00,       // NullTag
+		0x01, 0x00, // Bool tag
+		0x04, 0x00, 0x00, // Int16 tag
+	}
+	r = bytes.NewReader(serialized)
+	tag, err = ILTagDeserialize(testTagFactory, r)
+	assert.Nil(t, err)
+	assert.Equal(t, IL_ILTAGSEQ_TAG_ID, tag.Id())
+	assert.IsType(t, &ILTagSequenceTag{}, tag)
+	exp := []ILTag{
+		NewStdNullTag(),
+		NewStdBoolTag(),
+		NewStdInt16Tag()}
+	assert.Equal(t, exp, tag.(*ILTagSequenceTag).Payload)
+
+	serialized = append(
+		[]byte{
+			0x16,       // ID
+			0xF8, 0x08, // Size
+		},
+		make([]byte, 256)...)
+	r = bytes.NewReader(serialized)
+	tag, err = ILTagDeserialize(testTagFactory, r)
+	assert.Nil(t, err)
+	assert.Equal(t, IL_ILTAGSEQ_TAG_ID, tag.Id())
+	assert.IsType(t, &ILTagSequenceTag{}, tag)
+	exp = make([]ILTag, 256)
+	for i := 0; i < 256; i++ {
+		exp[i] = NewStdNullTag()
+	}
+	assert.Equal(t, exp, tag.(*ILTagSequenceTag).Payload)
+	w = bytes.NewBuffer(nil)
+	assert.Nil(t, ILTagSeralize(tag, w))
+	assert.Equal(t, serialized, w.Bytes())
+}
+
+func TestRangeTagReference(t *testing.T) {
+
+	serialized := []byte{
+		0x17, // ID
+		0x03, // Size
+		0x00,
+		0x00, 0x00}
+	r := bytes.NewReader(serialized)
+	tag, err := ILTagDeserialize(testTagFactory, r)
+	assert.Nil(t, err)
+	assert.Equal(t, IL_RANGE_TAG_ID, tag.Id())
+	assert.IsType(t, &RangeTag{}, tag)
+	assert.Equal(t, uint64(0), tag.(*RangeTag).Start)
+	assert.Equal(t, uint16(0), tag.(*RangeTag).Count)
+	w := bytes.NewBuffer([]byte{})
+	assert.Nil(t, ILTagSeralize(tag, w))
+	assert.Equal(t, serialized, w.Bytes())
+
+	serialized = []byte{
+		0x17, // ID
+		0x04, // Size
+		0xF8, 0x08,
+		0xFE, 0xDC}
+	r = bytes.NewReader(serialized)
+	tag, err = ILTagDeserialize(testTagFactory, r)
+	assert.Nil(t, err)
+	assert.Equal(t, IL_RANGE_TAG_ID, tag.Id())
+	assert.IsType(t, &RangeTag{}, tag)
+	assert.Equal(t, uint64(256), tag.(*RangeTag).Start)
+	assert.Equal(t, uint16(0xFEDC), tag.(*RangeTag).Count)
+	w = bytes.NewBuffer([]byte{})
+	assert.Nil(t, ILTagSeralize(tag, w))
+	assert.Equal(t, serialized, w.Bytes())
+
+	serialized = []byte{
+		0x17, // ID
+		0x0A, // Size
+		0xFE, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD,
+		0xFE, 0xDC}
+	r = bytes.NewReader(serialized)
+	tag, err = ILTagDeserialize(testTagFactory, r)
+	assert.Nil(t, err)
+	assert.Equal(t, IL_RANGE_TAG_ID, tag.Id())
+	assert.IsType(t, &RangeTag{}, tag)
+	assert.Equal(t, uint64(0x123456789ACC5), tag.(*RangeTag).Start)
+	assert.Equal(t, uint16(0xFEDC), tag.(*RangeTag).Count)
+	w = bytes.NewBuffer([]byte{})
+	assert.Nil(t, ILTagSeralize(tag, w))
+	assert.Equal(t, serialized, w.Bytes())
+
+	serialized = []byte{
+		0x17, // ID
+		0x00, // Size
+	}
+	r = bytes.NewReader(serialized)
+	tag, err = ILTagDeserialize(testTagFactory, r)
+	assert.Error(t, err)
+	assert.Nil(t, tag)
+}
+
+func TestVersionTagReference(t *testing.T) {
+
+	serialized := []byte{
+		0x18, // ID
+		0x10, // Size
+		0xFE, 0xDC, 0xBA, 0x98,
+		0x76, 0x54, 0x32, 0x10,
+		0x01, 0x23, 0x45, 0x67,
+		0x89, 0xAB, 0xCD, 0xEF}
+	r := bytes.NewReader(serialized)
+	tag, err := ILTagDeserialize(testTagFactory, r)
+	assert.Nil(t, err)
+	assert.Equal(t, IL_VERSION_TAG_ID, tag.Id())
+	assert.IsType(t, &VersionTag{}, tag)
+	assert.Equal(t, int32(-19088744), tag.(*VersionTag).Major)
+	assert.Equal(t, int32(1985229328), tag.(*VersionTag).Minor)
+	assert.Equal(t, int32(19088743), tag.(*VersionTag).Revision)
+	assert.Equal(t, int32(-1985229329), tag.(*VersionTag).Build)
+	w := bytes.NewBuffer([]byte{})
+	assert.Nil(t, ILTagSeralize(tag, w))
+	assert.Equal(t, serialized, w.Bytes())
+
+	serialized = []byte{
+		0x18, // ID
+		0x00, // Size
+	}
+	r = bytes.NewReader(serialized)
+	tag, err = ILTagDeserialize(testTagFactory, r)
+	assert.Error(t, err)
+	assert.Nil(t, tag)
+}
+
+func TestOIDTagReference(t *testing.T) {
+
+	serialized := []byte{
+		0x19, // ID
+		0x01, // Size
+		0x00, // Payload
+	}
+	r := bytes.NewReader(serialized)
+	tag, err := ILTagDeserialize(testTagFactory, r)
+	assert.Nil(t, err)
+	assert.Equal(t, IL_OID_TAG_ID, tag.Id())
+	assert.IsType(t, &OIDTag{}, tag)
+	assert.Equal(t, []uint64{}, tag.(*OIDTag).Payload)
+	w := bytes.NewBuffer([]byte{})
+	assert.Nil(t, ILTagSeralize(tag, w))
+	assert.Equal(t, serialized, w.Bytes())
+
+	serialized = []byte{
+		0x19, // ID
+		0x37, // Size
+		0x0A,
+		0xF7,
+		0xF8, 0x00,
+		0xF9, 0x01, 0x23,
+		0xFA, 0x01, 0x23, 0x45,
+		0xFB, 0x01, 0x23, 0x45, 0x67,
+		0xFC, 0x01, 0x23, 0x45, 0x67, 0x89,
+		0xFD, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB,
+		0xFE, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD,
+		0xFF, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF,
+		0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x07}
+	r = bytes.NewReader(serialized)
+	tag, err = ILTagDeserialize(testTagFactory, r)
+	assert.Nil(t, err)
+	assert.Equal(t, IL_OID_TAG_ID, tag.Id())
+	assert.IsType(t, &OIDTag{}, tag)
+	assert.Equal(t, []uint64{
+		0xf7,
+		0xf8,
+		0x21b,
+		0x1243d,
+		0x123465f,
+		0x123456881,
+		0x12345678aa3,
+		0x123456789acc5,
+		0x123456789abcee7,
+		0xffffffffffffffff}, tag.(*OIDTag).Payload)
+	w = bytes.NewBuffer(nil)
+	assert.Nil(t, ILTagSeralize(tag, w))
+	assert.Equal(t, serialized, w.Bytes())
+
+	// Long zeroes
+	serialized = append(
+		[]byte{
+			0x19,       // ID
+			0xF8, 0x0A, // Size
+			0xF8, 0x08, // Count
+		},
+		make([]byte, 256)...)
+	r = bytes.NewReader(serialized)
+	tag, err = ILTagDeserialize(testTagFactory, r)
+	assert.Nil(t, err)
+	assert.Equal(t, IL_OID_TAG_ID, tag.Id())
+	assert.IsType(t, &OIDTag{}, tag)
+	assert.Equal(t, make([]uint64, 256), tag.(*OIDTag).Payload)
+	w = bytes.NewBuffer(nil)
+	assert.Nil(t, ILTagSeralize(tag, w))
+	assert.Equal(t, serialized, w.Bytes())
+
+	serialized = []byte{
+		0x19, // ID
+		0x00, // Size
+	}
+	r = bytes.NewReader(serialized)
+	tag, err = ILTagDeserialize(testTagFactory, r)
+	assert.Error(t, err)
+	assert.Nil(t, tag)
+}
