@@ -5,10 +5,11 @@
 This is the implementation of **InterlockLedger** **ILTag** for **Go**. For more information, see
 the [specification of IL2](https://github.com/interlockledger/specification/tree/master).
 
-## Minimum Go version
+## Minimum Go Version
 
-This library was written with for **Go** 1.18 without the use of 
-[Generics](https://go.googlesource.com/proposal/+/refs/heads/master/design/43651-type-parameters.md). Because of that, we belive that this library will
+This library was written using **Go** 1.18 without the use of 
+[Generics](https://go.googlesource.com/proposal/+/refs/heads/master/design/43651-type-parameters.md). 
+Because of that, we believe that this library will
 work with older versions of **Go** but we do not plan to officially provide
 support for older versions of **Go** in this project.
 
@@ -16,7 +17,7 @@ support for older versions of **Go** in this project.
 
 This library has been developed to run without any external dependencies aside for the
 Go standard library with the exception of [Testify](https://github.com/stretchr/testify)
-that is used to implements the unit tests.
+that is used to implement the unit tests.
 
 ## Documentation
 
