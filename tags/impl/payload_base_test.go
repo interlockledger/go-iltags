@@ -92,6 +92,7 @@ func TestRawPayload(t *testing.T) {
 	// Deserialize
 	r := bytes.NewReader([]byte{})
 	f := &mockFactory{}
+	tag.Payload = []byte{0xFF} // Just add garbage to ensure overwrite
 	assert.Nil(t, tag.DeserializeValue(f, 0, r))
 	assert.Equal(t, []byte{}, tag.Payload)
 
@@ -185,6 +186,7 @@ func TestBigIntPayload(t *testing.T) {
 	// Deserialize
 	r := bytes.NewReader([]byte{0x00})
 	f := &mockFactory{}
+	tag.Payload = []byte{0xFF}
 	assert.Nil(t, tag.DeserializeValue(f, 1, r))
 	assert.Equal(t, []byte{0x00}, tag.Payload)
 
@@ -238,6 +240,7 @@ func TestBigDecPayload(t *testing.T) {
 	// Deserialize
 	r := bytes.NewReader([]byte{0x00, 0x01, 0x23, 0x45, 0x67})
 	f := &mockFactory{}
+	tag.Payload = []byte{0xFF}
 	assert.Nil(t, tag.DeserializeValue(f, 5, r))
 	assert.Equal(t, []byte{0x00}, tag.Payload)
 	assert.Equal(t, int32(0x01234567), tag.Scale)
@@ -302,6 +305,7 @@ func TestILIntArrayPayload(t *testing.T) {
 	// Deserialize
 	r := bytes.NewReader([]byte{0x00})
 	f := &mockFactory{}
+	tag.Payload = []uint64{0xFF}
 	assert.Nil(t, tag.DeserializeValue(f, 1, r))
 	assert.Equal(t, []uint64{}, tag.Payload)
 
@@ -378,7 +382,7 @@ func TestILTagArrayPayload(t *testing.T) {
 	// Deserialize
 	r := bytes.NewReader([]byte{0x00})
 	f := &StandardTagFactory{}
-
+	tag.Payload = []ILTag{NewStdNullTag()}
 	assert.Nil(t, tag.DeserializeValue(f, 1, r))
 	assert.Equal(t, []ILTag{}, tag.Payload)
 
@@ -446,7 +450,7 @@ func TestILTagSequencePayload(t *testing.T) {
 	// Deserialize
 	r := bytes.NewReader([]byte{})
 	f := &StandardTagFactory{}
-
+	tag.Payload = []ILTag{NewStdNullTag()}
 	assert.Nil(t, tag.DeserializeValue(f, 0, r))
 	assert.Equal(t, []ILTag{}, tag.Payload)
 
@@ -614,6 +618,7 @@ func TestStringDictionaryPayload(t *testing.T) {
 	f := NewStandardTagFactory(false)
 
 	tag.Map.Clear()
+	tag.Map.Put("a", "b")
 	r := bytes.NewReader([]byte{0x00})
 	assert.Nil(t, tag.DeserializeValue(f, 1, r))
 	assert.Equal(t, 0, tag.Map.Size())
@@ -708,6 +713,7 @@ func TestDictionaryPayload(t *testing.T) {
 	// Deserialize
 	f := NewStandardTagFactory(false)
 	tag.Map.Clear()
+	tag.Map.Put("a1", NewStdNullTag())
 	r := bytes.NewReader([]byte{0x00})
 	assert.Nil(t, tag.DeserializeValue(f, 1, r))
 	assert.Equal(t, 0, tag.Map.Size())
