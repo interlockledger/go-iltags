@@ -342,6 +342,7 @@ func TestReadTagPayload(t *testing.T) {
 	tag = &mockTag{}
 	s = uint64(0)
 	tag.On("Id").Return(IL_BYTES_TAG_ID)
+	tag.On("DeserializeValue", f, int(s), mock.Anything).Return(nil)
 	assert.Nil(t, readTagPayload(f, r, s, tag))
 
 	// Read a normal tag
@@ -385,6 +386,7 @@ func TestILTagDeserialize(t *testing.T) {
 	tag := &mockTag{}
 	f := &mockFactory{}
 	tag.On("Id").Return(IL_NULL_TAG_ID)
+	tag.On("DeserializeValue", f, mock.Anything, mock.Anything).Return(nil)
 	f.On("CreateTag", IL_NULL_TAG_ID).Return(tag, nil)
 	nt, err := ILTagDeserialize(f, r)
 	assert.Nil(t, err)
@@ -428,6 +430,7 @@ func TestILTagDeserializeInto(t *testing.T) {
 	tag := &mockTag{}
 	f := &mockFactory{}
 	tag.On("Id").Return(IL_NULL_TAG_ID)
+	tag.On("DeserializeValue", f, mock.Anything, mock.Anything).Return(nil)
 	f.On("CreateTag", IL_NULL_TAG_ID).Return(tag, nil)
 	err := ILTagDeserializeInto(f, r, tag)
 	assert.Nil(t, err)
@@ -469,6 +472,7 @@ func TestILTagFromBytes(t *testing.T) {
 	tag := &mockTag{}
 	f := &mockFactory{}
 	tag.On("Id").Return(IL_NULL_TAG_ID)
+	tag.On("DeserializeValue", f, mock.Anything, mock.Anything).Return(nil)
 	f.On("CreateTag", IL_NULL_TAG_ID).Return(tag, nil)
 	nt, err := ILTagFromBytes(f, bin)
 	assert.Nil(t, err)
@@ -479,6 +483,7 @@ func TestILTagFromBytes(t *testing.T) {
 	tag = &mockTag{}
 	f = &mockFactory{}
 	tag.On("Id").Return(IL_NULL_TAG_ID)
+	tag.On("DeserializeValue", f, mock.Anything, mock.Anything).Return(nil)
 	f.On("CreateTag", IL_NULL_TAG_ID).Return(tag, nil)
 	nt, err = ILTagFromBytes(f, bin)
 	assert.ErrorIs(t, err, ErrBadTagFormat)
