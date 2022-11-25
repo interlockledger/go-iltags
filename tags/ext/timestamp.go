@@ -109,7 +109,7 @@ func (p *TimestampTZPayload) ValueSize() uint64 {
 // Implementation of ILTagPayload.SerializeValue()
 func (p *TimestampTZPayload) SerializeValue(writer io.Writer) error {
 	if err := p.SignedILIntPayload.SerializeValue(writer); err != nil {
-		return nil
+		return err
 	}
 	return serialization.WriteInt16(writer, p.Offset)
 }
