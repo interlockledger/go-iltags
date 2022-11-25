@@ -32,8 +32,14 @@
 
 package ext
 
-import "io"
+import (
+	"io"
+	"testing"
 
+	"github.com/stretchr/testify/assert"
+)
+
+// A dummy writer that can be used to simulate Write errors.
 type DummyWriter struct {
 	Limit int
 }
@@ -49,4 +55,29 @@ func (w *DummyWriter) Write(p []byte) (int, error) {
 		w.Limit -= n
 		return n, nil
 	}
+}
+
+func TestDummyWriter(t *testing.T) {
+	w := DummyWriter{0}
+
+	n, err := w.Write([]byte{})
+	assert.Nil(t, err)
+	assert.Equal(t, 0, n)
+
+	w.Limit = 5
+	n, err = w.Write([]byte{1, 2, 3, 4, 5})
+	assert.Nil(t, err)
+	assert.Equal(t, 5, n)
+	assert.Equal(t, 0, w.Limit)
+
+	w.Limit = 6
+	n, err = w.Write([]byte{1, 2, 3, 4, 5})
+	assert.Nil(t, err)
+	assert.Equal(t, 5, n)
+	assert.Equal(t, 1, w.Limit)
+
+	n, err = w.Write([]byte{1, 2, 3, 4, 5})
+	assert.ErrorIs(t, err, io.ErrShortWrite)
+	assert.Equal(t, 1, n)
+	assert.Equal(t, 0, w.Limit)
 }
