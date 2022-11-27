@@ -53,7 +53,9 @@ type TimestapTag struct {
 }
 
 /*
-Create a new TimestapTag. This tag cannot
+Create a new TimestapTag.
+
+This function panics if the provided id is reserved for implicit tags.
 */
 func NewTimestapTag(id tags.TagID) *TimestapTag {
 	if id.Implicit() {
@@ -152,7 +154,9 @@ type TimestapTZTag struct {
 }
 
 /*
-Create a new TimestapTag. This tag cannot
+Create a new TimestapTZTag.
+
+This function panics if the provided id is reserved for implicit tags.
 */
 func NewTimestapTZTag(id tags.TagID) *TimestapTZTag {
 	if id.Implicit() {
