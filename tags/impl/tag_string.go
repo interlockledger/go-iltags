@@ -37,17 +37,17 @@ import (
 
 	"github.com/interlockledger/go-iltags/ilint"
 	"github.com/interlockledger/go-iltags/serialization"
-	. "github.com/interlockledger/go-iltags/tags"
+	"github.com/interlockledger/go-iltags/tags"
 )
 
 // Implementation of the StringTag tag.
 type StringTag struct {
-	ILTagHeaderImpl
+	tags.ILTagHeaderImpl
 	StringPayload
 }
 
 // Create a new StringTag.
-func NewStringTag(id TagID) *StringTag {
+func NewStringTag(id tags.TagID) *StringTag {
 	var t StringTag
 	t.SetId(id)
 	return &t
@@ -59,7 +59,7 @@ Returns the size of the string tag that will hold the given string.
 This function exists as a faster and more efficient way to deal with string tags
 without using StringTag instances.
 */
-func StringTagSize(tagId TagID, s string) uint64 {
+func StringTagSize(tagId tags.TagID, s string) uint64 {
 	l := len(s)
 	return uint64(ilint.EncodedSize(uint64(tagId)) +
 		ilint.EncodedSize(uint64(l)) + l)
@@ -71,7 +71,7 @@ Serializes a string directly using the StringTag format.
 This function exists as a faster and more efficient way to deal with string tags
 without using StringTag instances.
 */
-func SerializeStringTag(tagId TagID, s string, writer io.Writer) error {
+func SerializeStringTag(tagId tags.TagID, s string, writer io.Writer) error {
 	if err := serialization.WriteILInt(writer, uint64(tagId)); err != nil {
 		return err
 	}
@@ -90,20 +90,20 @@ Deserializes a string tag directly into a string.
 This function exists as a faster and more efficient way to deal with string tags
 without using StringTag instances.
 */
-func DeserializeStringTag(expectedId TagID, reader io.Reader) (string, error) {
+func DeserializeStringTag(expectedId tags.TagID, reader io.Reader) (string, error) {
 	id, err := serialization.ReadILInt(reader)
 	if err != nil {
 		return "", err
 	}
-	if TagID(id) != expectedId {
-		return "", NewErrUnexpectedTagId(expectedId, TagID(id))
+	if tags.TagID(id) != expectedId {
+		return "", tags.NewErrUnexpectedTagId(expectedId, tags.TagID(id))
 	}
 	size, err := serialization.ReadILInt(reader)
 	if err != nil {
 		return "", err
 	}
-	if size > MAX_TAG_SIZE {
-		return "", ErrTagTooLarge
+	if size > tags.MAX_TAG_SIZE {
+		return "", tags.ErrTagTooLarge
 	}
 	if s, err := serialization.ReadString(reader, int(size)); err != nil {
 		return "", err
@@ -116,19 +116,19 @@ func DeserializeStringTag(expectedId TagID, reader io.Reader) (string, error) {
 Returns the size of the standard string tag that will hold the given string.
 */
 func StdStringTagSize(s string) uint64 {
-	return StringTagSize(IL_STRING_TAG_ID, s)
+	return StringTagSize(tags.IL_STRING_TAG_ID, s)
 }
 
 /*
 Serializes a string directly using the standard StringTag format.
 */
 func SerializeStdStringTag(s string, writer io.Writer) error {
-	return SerializeStringTag(IL_STRING_TAG_ID, s, writer)
+	return SerializeStringTag(tags.IL_STRING_TAG_ID, s, writer)
 }
 
 /*
 Deserializes a standard string tag directly into a string.
 */
 func DeserializeStdStringTag(reader io.Reader) (string, error) {
-	return DeserializeStringTag(IL_STRING_TAG_ID, reader)
+	return DeserializeStringTag(tags.IL_STRING_TAG_ID, reader)
 }

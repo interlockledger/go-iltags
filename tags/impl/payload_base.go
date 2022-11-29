@@ -37,45 +37,8 @@ import (
 
 	"github.com/interlockledger/go-iltags/ilint"
 	"github.com/interlockledger/go-iltags/serialization"
-	. "github.com/interlockledger/go-iltags/tags"
+	"github.com/interlockledger/go-iltags/tags"
 )
-
-//------------------------------------------------------------------------------
-
-// Implementation of the raw payload.
-type RawPayload struct {
-	Payload []byte
-}
-
-// Implementation of ILTagPayload.ValueSize().
-func (p *RawPayload) ValueSize() uint64 {
-	if p.Payload != nil {
-		return uint64(len(p.Payload))
-	} else {
-		return 0
-	}
-}
-
-// Implementation of ILTagPayload.SerializeValue()
-func (p *RawPayload) SerializeValue(writer io.Writer) error {
-	if p.Payload != nil {
-		return serialization.WriteBytes(writer, p.Payload)
-	}
-	return nil
-}
-
-// Implementation of ILTagPayload.DeserializeValue()
-func (p *RawPayload) DeserializeValue(factory ILTagFactory, valueSize int, reader io.Reader) error {
-	if valueSize < 0 {
-		return ErrBadTagFormat
-	}
-	p.Payload = make([]byte, valueSize)
-	if valueSize > 0 {
-		return serialization.ReadBytes(reader, p.Payload)
-	} else {
-		return nil
-	}
-}
 
 //------------------------------------------------------------------------------
 
@@ -95,9 +58,9 @@ func (p *StringPayload) SerializeValue(writer io.Writer) error {
 }
 
 // Implementation of ILTagPayload.DeserializeValue()
-func (p *StringPayload) DeserializeValue(factory ILTagFactory, valueSize int, reader io.Reader) error {
+func (p *StringPayload) DeserializeValue(factory tags.ILTagFactory, valueSize int, reader io.Reader) error {
 	if valueSize < 0 {
-		return ErrBadTagFormat
+		return tags.ErrBadTagFormat
 	} else if valueSize == 0 {
 		p.Payload = ""
 		return nil
@@ -137,9 +100,9 @@ func (p *BigIntPayload) SerializeValue(writer io.Writer) error {
 }
 
 // Implementation of ILTagPayload.DeserializeValue()
-func (p *BigIntPayload) DeserializeValue(factory ILTagFactory, valueSize int, reader io.Reader) error {
+func (p *BigIntPayload) DeserializeValue(factory tags.ILTagFactory, valueSize int, reader io.Reader) error {
 	if valueSize < 1 {
-		return ErrBadTagFormat
+		return tags.ErrBadTagFormat
 	}
 	p.Payload = make([]byte, valueSize)
 	return serialization.ReadBytes(reader, p.Payload)
@@ -167,9 +130,9 @@ func (p *BigDecPayload) SerializeValue(writer io.Writer) error {
 }
 
 // Implementation of ILTagPayload.DeserializeValue()
-func (p *BigDecPayload) DeserializeValue(factory ILTagFactory, valueSize int, reader io.Reader) error {
+func (p *BigDecPayload) DeserializeValue(factory tags.ILTagFactory, valueSize int, reader io.Reader) error {
 	if valueSize < 5 {
-		return ErrBadTagFormat
+		return tags.ErrBadTagFormat
 	}
 	if err := p.BigIntPayload.DeserializeValue(factory, valueSize-4, reader); err != nil {
 		return err
@@ -216,9 +179,9 @@ func (p *ILIntArrayPayload) SerializeValue(writer io.Writer) error {
 }
 
 // Implementation of ILTagPayload.DeserializeValue()
-func (p *ILIntArrayPayload) DeserializeValue(factory ILTagFactory, valueSize int, reader io.Reader) error {
+func (p *ILIntArrayPayload) DeserializeValue(factory tags.ILTagFactory, valueSize int, reader io.Reader) error {
 	if valueSize < 1 {
-		return ErrBadTagFormat
+		return tags.ErrBadTagFormat
 	}
 	r := &io.LimitedReader{R: reader, N: int64(valueSize)}
 	a, err := p.deserializeValueCore(r)
@@ -229,7 +192,7 @@ func (p *ILIntArrayPayload) DeserializeValue(factory ILTagFactory, valueSize int
 		p.Payload = a
 		return nil
 	} else {
-		return ErrBadTagFormat
+		return tags.ErrBadTagFormat
 	}
 }
 
@@ -241,7 +204,7 @@ func (p *ILIntArrayPayload) deserializeValueCore(reader *io.LimitedReader) ([]ui
 	}
 	// Check the format. All 1 byte ILInt
 	if size > uint64(reader.N) {
-		return nil, ErrBadTagFormat
+		return nil, tags.ErrBadTagFormat
 	}
 	a := make([]uint64, int(size))
 	for i := 0; i < len(a); i++ {
@@ -258,7 +221,7 @@ func (p *ILIntArrayPayload) deserializeValueCore(reader *io.LimitedReader) ([]ui
 
 // Implementation of the ILTag array payload.
 type ILTagArrayPayload struct {
-	Payload []ILTag
+	Payload []tags.ILTag
 }
 
 // Implementation of ILTagPayload.ValueSize().
@@ -268,7 +231,7 @@ func (p *ILTagArrayPayload) ValueSize() uint64 {
 	}
 	size := ilint.EncodedSize(uint64(len(p.Payload)))
 	for _, v := range p.Payload {
-		size += int(ILTagSize(v))
+		size += int(tags.ILTagSize(v))
 	}
 	return uint64(size)
 }
@@ -282,7 +245,7 @@ func (p *ILTagArrayPayload) SerializeValue(writer io.Writer) error {
 		return err
 	}
 	for _, v := range p.Payload {
-		if err := ILTagSeralize(v, writer); err != nil {
+		if err := tags.ILTagSeralize(v, writer); err != nil {
 			return err
 		}
 	}
@@ -290,9 +253,9 @@ func (p *ILTagArrayPayload) SerializeValue(writer io.Writer) error {
 }
 
 // Implementation of ILTagPayload.DeserializeValue()
-func (p *ILTagArrayPayload) DeserializeValue(factory ILTagFactory, valueSize int, reader io.Reader) error {
+func (p *ILTagArrayPayload) DeserializeValue(factory tags.ILTagFactory, valueSize int, reader io.Reader) error {
 	if valueSize < 1 {
-		return ErrBadTagFormat
+		return tags.ErrBadTagFormat
 	}
 	r := &io.LimitedReader{R: reader, N: int64(valueSize)}
 	a, err := p.deserializeValueCore(factory, r)
@@ -303,11 +266,12 @@ func (p *ILTagArrayPayload) DeserializeValue(factory ILTagFactory, valueSize int
 		p.Payload = a
 		return nil
 	} else {
-		return ErrBadTagFormat
+		return tags.ErrBadTagFormat
 	}
 }
 
-func (p *ILTagArrayPayload) deserializeValueCore(factory ILTagFactory, reader *io.LimitedReader) ([]ILTag, error) {
+func (p *ILTagArrayPayload) deserializeValueCore(factory tags.ILTagFactory,
+	reader *io.LimitedReader) ([]tags.ILTag, error) {
 	// Read the size first
 	size, err := serialization.ReadILInt(reader)
 	if err != nil {
@@ -315,11 +279,11 @@ func (p *ILTagArrayPayload) deserializeValueCore(factory ILTagFactory, reader *i
 	}
 	// Basic format check. All null tags
 	if size > uint64(reader.N) {
-		return nil, ErrBadTagFormat
+		return nil, tags.ErrBadTagFormat
 	}
-	a := make([]ILTag, int(size))
+	a := make([]tags.ILTag, int(size))
 	for i := 0; i < len(a); i++ {
-		if v, err := ILTagDeserialize(factory, reader); err != nil {
+		if v, err := tags.ILTagDeserialize(factory, reader); err != nil {
 			return nil, err
 		} else {
 			a[i] = v
@@ -332,7 +296,7 @@ func (p *ILTagArrayPayload) deserializeValueCore(factory ILTagFactory, reader *i
 
 // Implementation of the ILTag sequence payload.
 type ILTagSequencePayload struct {
-	Payload []ILTag
+	Payload []tags.ILTag
 }
 
 // Implementation of ILTagPayload.ValueSize().
@@ -342,7 +306,7 @@ func (p *ILTagSequencePayload) ValueSize() uint64 {
 	}
 	size := 0
 	for _, v := range p.Payload {
-		size += int(ILTagSize(v))
+		size += int(tags.ILTagSize(v))
 	}
 	return uint64(size)
 }
@@ -353,7 +317,7 @@ func (p *ILTagSequencePayload) SerializeValue(writer io.Writer) error {
 		return nil
 	}
 	for _, v := range p.Payload {
-		if err := ILTagSeralize(v, writer); err != nil {
+		if err := tags.ILTagSeralize(v, writer); err != nil {
 			return err
 		}
 	}
@@ -361,17 +325,17 @@ func (p *ILTagSequencePayload) SerializeValue(writer io.Writer) error {
 }
 
 // Implementation of ILTagPayload.DeserializeValue()
-func (p *ILTagSequencePayload) DeserializeValue(factory ILTagFactory, valueSize int, reader io.Reader) error {
+func (p *ILTagSequencePayload) DeserializeValue(factory tags.ILTagFactory, valueSize int, reader io.Reader) error {
 	if valueSize < 0 {
-		return ErrBadTagFormat
+		return tags.ErrBadTagFormat
 	} else if valueSize == 0 {
-		p.Payload = make([]ILTag, 0)
+		p.Payload = make([]tags.ILTag, 0)
 		return nil
 	} else {
 		r := io.LimitedReader{R: reader, N: int64(valueSize)}
-		a := make([]ILTag, 0, 16)
+		a := make([]tags.ILTag, 0, 16)
 		for {
-			if v, err := ILTagDeserialize(factory, &r); err != nil {
+			if v, err := tags.ILTagDeserialize(factory, &r); err != nil {
 				return err
 			} else {
 				a = append(a, v)
@@ -410,9 +374,10 @@ func (p *RangePayload) SerializeValue(writer io.Writer) error {
 }
 
 // Implementation of ILTagPayload.DeserializeValue()
-func (p *RangePayload) DeserializeValue(factory ILTagFactory, valueSize int, reader io.Reader) error {
+func (p *RangePayload) DeserializeValue(factory tags.ILTagFactory,
+	valueSize int, reader io.Reader) error {
 	if valueSize < 3 {
-		return ErrBadTagFormat
+		return tags.ErrBadTagFormat
 	}
 	r := io.LimitedReader{R: reader, N: int64(valueSize)}
 	// Read start
@@ -430,7 +395,7 @@ func (p *RangePayload) DeserializeValue(factory ILTagFactory, valueSize int, rea
 		p.Count = c
 		return nil
 	} else {
-		return ErrBadTagFormat
+		return tags.ErrBadTagFormat
 	}
 }
 
@@ -467,9 +432,9 @@ func (p *VersionPayload) SerializeValue(writer io.Writer) error {
 }
 
 // Implementation of ILTagPayload.DeserializeValue()
-func (p *VersionPayload) DeserializeValue(factory ILTagFactory, valueSize int, reader io.Reader) error {
+func (p *VersionPayload) DeserializeValue(factory tags.ILTagFactory, valueSize int, reader io.Reader) error {
 	if valueSize != 16 {
-		return ErrBadTagFormat
+		return tags.ErrBadTagFormat
 	}
 	major, err := serialization.ReadInt32(reader)
 	if err != nil {
@@ -531,9 +496,9 @@ func (p *StringDictionaryPayload) SerializeValue(writer io.Writer) error {
 }
 
 // Implementation of ILTagPayload.DeserializeValue()
-func (p *StringDictionaryPayload) DeserializeValue(factory ILTagFactory, valueSize int, reader io.Reader) error {
+func (p *StringDictionaryPayload) DeserializeValue(factory tags.ILTagFactory, valueSize int, reader io.Reader) error {
 	if valueSize < 1 {
-		return ErrBadTagFormat
+		return tags.ErrBadTagFormat
 	}
 	p.Map.Clear()
 	r := &io.LimitedReader{R: reader, N: int64(valueSize)}
@@ -543,7 +508,7 @@ func (p *StringDictionaryPayload) DeserializeValue(factory ILTagFactory, valueSi
 	}
 	// Check if something is left in the payload
 	if r.N != 0 {
-		return ErrBadTagFormat
+		return tags.ErrBadTagFormat
 	}
 	return nil
 }
@@ -552,13 +517,13 @@ func (p *StringDictionaryPayload) deserializeValueCore(reader *io.LimitedReader)
 	// Read size and see if it can be used
 	size, err := serialization.ReadILInt(reader)
 	if err != nil {
-		return ErrBadTagFormat
+		return tags.ErrBadTagFormat
 	}
 	if size > uint64(reader.N/(2+2)) {
 		// The maximum number of entries that can fit in N bytes is
 		// remaining / (minStringTagSize + minStringTagSize) where
 		// minStringTagSize is 2 (standard string tag size storing "")
-		return ErrBadTagFormat
+		return tags.ErrBadTagFormat
 	}
 	for i := 0; i < int(size); i++ {
 		k, err := DeserializeStdStringTag(reader)
@@ -587,7 +552,7 @@ func (p *DictionaryPayload) ValueSize() uint64 {
 	for _, k := range p.Map.Keys() {
 		size += StdStringTagSize(k)
 		t, _ := p.Map.Get(k)
-		size += ILTagSize(t)
+		size += tags.ILTagSize(t)
 	}
 	return size
 }
@@ -602,7 +567,7 @@ func (p *DictionaryPayload) SerializeValue(writer io.Writer) error {
 			return err
 		}
 		t, _ := p.Map.Get(k)
-		if err := ILTagSeralize(t, writer); err != nil {
+		if err := tags.ILTagSeralize(t, writer); err != nil {
 			return err
 		}
 	}
@@ -611,9 +576,9 @@ func (p *DictionaryPayload) SerializeValue(writer io.Writer) error {
 }
 
 // Implementation of ILTagPayload.DeserializeValue()
-func (p *DictionaryPayload) DeserializeValue(factory ILTagFactory, valueSize int, reader io.Reader) error {
+func (p *DictionaryPayload) DeserializeValue(factory tags.ILTagFactory, valueSize int, reader io.Reader) error {
 	if valueSize < 1 {
-		return ErrBadTagFormat
+		return tags.ErrBadTagFormat
 	}
 	r := &io.LimitedReader{R: reader, N: int64(valueSize)}
 	// Deserialize...
@@ -622,22 +587,22 @@ func (p *DictionaryPayload) DeserializeValue(factory ILTagFactory, valueSize int
 	}
 	// Check if something is left in the payload
 	if r.N != 0 {
-		return ErrBadTagFormat
+		return tags.ErrBadTagFormat
 	}
 	return nil
 }
 
-func (p *DictionaryPayload) deserializeValueCore(factory ILTagFactory, reader *io.LimitedReader) error {
+func (p *DictionaryPayload) deserializeValueCore(factory tags.ILTagFactory, reader *io.LimitedReader) error {
 	// Read size and see if it can be used
 	size, err := serialization.ReadILInt(reader)
 	if err != nil {
-		return ErrBadTagFormat
+		return tags.ErrBadTagFormat
 	}
 	if size > uint64(reader.N/(2+1)) {
 		// The maximum number of entries that can fit in N bytes is
 		// remaining / (minStringTagSize + minTagSize) where
 		// minStringTagSize is 2 and minTagSize is 1 (standard string tag size storing "")
-		return ErrBadTagFormat
+		return tags.ErrBadTagFormat
 	}
 	p.Map.Clear()
 	for i := 0; i < int(size); i++ {
@@ -645,7 +610,7 @@ func (p *DictionaryPayload) deserializeValueCore(factory ILTagFactory, reader *i
 		if err != nil {
 			return err
 		}
-		t, err := ILTagDeserialize(factory, reader)
+		t, err := tags.ILTagDeserialize(factory, reader)
 		if err != nil {
 			return err
 		}

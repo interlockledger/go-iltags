@@ -41,21 +41,21 @@ import (
 
 	"github.com/interlockledger/go-iltags/ilint"
 	"github.com/interlockledger/go-iltags/serialization"
-	. "github.com/interlockledger/go-iltags/tags"
+	"github.com/interlockledger/go-iltags/tags"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestStringTag(t *testing.T) {
-	var _ ILTag = (*StringTag)(nil)
+	var _ tags.ILTag = (*StringTag)(nil)
 
 	var tag StringTag
-	assert.True(t, AssertStructEmbeds(tag, ILTagHeaderImpl{}))
+	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
 	assert.True(t, AssertStructEmbeds(tag, StringPayload{}))
 }
 
 func TestNewStringTag(t *testing.T) {
-	id := TagID(1234567)
+	id := tags.TagID(1234567)
 	var tag *StringTag = NewStringTag(id)
 	assert.Equal(t, id, tag.Id())
 }
@@ -63,7 +63,7 @@ func TestNewStringTag(t *testing.T) {
 func TestStringTagSize(t *testing.T) {
 
 	for i := 0; i < 10; i++ {
-		id := TagID(rand.Uint64())
+		id := tags.TagID(rand.Uint64())
 		s := GenerateRandomString()
 		require.True(t, utf8.ValidString(s))
 		size := ilint.EncodedSize(id.UInt64()) +
@@ -76,7 +76,7 @@ func TestStringTagSize(t *testing.T) {
 func TestSerializeStringTag(t *testing.T) {
 
 	for i := 0; i < 10; i++ {
-		id := TagID(rand.Uint64())
+		id := tags.TagID(rand.Uint64())
 		s := GenerateRandomString()
 		b := bytes.NewBuffer(nil)
 		assert.Nil(t, SerializeStringTag(id, s, b))
@@ -89,7 +89,7 @@ func TestSerializeStringTag(t *testing.T) {
 		assert.Equal(t, exp.Bytes(), b.Bytes())
 	}
 
-	id := TagID(256)
+	id := tags.TagID(256)
 	s := "123456"
 	w := &limitedDummyWriter{1}
 	assert.NotNil(t, SerializeStringTag(id, s, w))
@@ -104,7 +104,7 @@ func TestSerializeStringTag(t *testing.T) {
 func TestDeserializeStringTag(t *testing.T) {
 
 	for i := 0; i < 10; i++ {
-		id := TagID(rand.Uint64())
+		id := tags.TagID(rand.Uint64())
 		s := GenerateRandomString()
 
 		exp := bytes.NewBuffer(nil)
@@ -147,25 +147,25 @@ func TestDeserializeStringTag(t *testing.T) {
 		assert.Equal(t, "", a)
 
 		re = bytes.NewReader(serialized)
-		a, err = DeserializeStringTag(TagID(id+1), re)
-		assert.ErrorIs(t, err, ErrUnexpectedTagId)
+		a, err = DeserializeStringTag(tags.TagID(id+1), re)
+		assert.ErrorIs(t, err, tags.ErrUnexpectedTagId)
 		assert.Equal(t, "", a)
 	}
 
 	exp := bytes.NewBuffer(nil)
-	id := TagID(1234)
+	id := tags.TagID(1234)
 	assert.Nil(t, serialization.WriteILInt(exp, id.UInt64()))
-	assert.Nil(t, serialization.WriteILInt(exp, uint64(MAX_TAG_SIZE+1)))
+	assert.Nil(t, serialization.WriteILInt(exp, uint64(tags.MAX_TAG_SIZE+1)))
 	re := bytes.NewReader(exp.Bytes())
 	a, err := DeserializeStringTag(id, re)
-	assert.ErrorIs(t, err, ErrTagTooLarge)
+	assert.ErrorIs(t, err, tags.ErrTagTooLarge)
 	assert.Equal(t, "", a)
 }
 
 func TestStdStringTagSize(t *testing.T) {
 
 	for i := 0; i < 10; i++ {
-		id := IL_STRING_TAG_ID
+		id := tags.IL_STRING_TAG_ID
 		s := GenerateRandomString()
 		require.True(t, utf8.ValidString(s))
 		assert.Equal(t, StdStringTagSize(s), StringTagSize(id, s))
@@ -175,7 +175,7 @@ func TestStdStringTagSize(t *testing.T) {
 func TestSerializeStdStringTag(t *testing.T) {
 
 	for i := 0; i < 10; i++ {
-		id := IL_STRING_TAG_ID
+		id := tags.IL_STRING_TAG_ID
 		s := GenerateRandomString()
 		exp := bytes.NewBuffer(nil)
 		assert.Nil(t, SerializeStringTag(id, s, exp))
@@ -192,7 +192,7 @@ func TestSerializeStdStringTag(t *testing.T) {
 func TestDeserializeStdStringTag(t *testing.T) {
 
 	for i := 0; i < 10; i++ {
-		id := IL_STRING_TAG_ID
+		id := tags.IL_STRING_TAG_ID
 		s := GenerateRandomString()
 		serialized := bytes.NewBuffer(nil)
 		assert.Nil(t, SerializeStringTag(id, s, serialized))
@@ -203,7 +203,7 @@ func TestDeserializeStdStringTag(t *testing.T) {
 	}
 
 	// Bad String tag or anything else.
-	id := IL_STRING_TAG_ID + 1
+	id := tags.IL_STRING_TAG_ID + 1
 	s := GenerateRandomString()
 	serialized := bytes.NewBuffer(nil)
 	assert.Nil(t, SerializeStringTag(id, s, serialized))

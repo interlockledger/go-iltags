@@ -35,180 +35,165 @@ package impl
 import (
 	"testing"
 
-	. "github.com/interlockledger/go-iltags/tags"
+	"github.com/interlockledger/go-iltags/tags"
 	"github.com/stretchr/testify/assert"
 )
 
-//------------------------------------------------------------------------------
-func TestRawTag(t *testing.T) {
-	var _ ILTag = (*RawTag)(nil)
-
-	var tag RawTag
-	assert.True(t, AssertStructEmbeds(tag, ILTagHeaderImpl{}))
-	assert.True(t, AssertStructEmbeds(tag, RawPayload{}))
-}
-
-func TestNewRawTag(t *testing.T) {
-	id := TagID(1234567)
-	var tag *RawTag = NewRawTag(id)
-	assert.Equal(t, id, tag.Id())
-}
-
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 func TestBytesTag(t *testing.T) {
-	var _ ILTag = (*BytesTag)(nil)
-	var _ RawTag = BytesTag{}
+	var _ tags.ILTag = (*BytesTag)(nil)
+	var _ tags.RawTag = BytesTag{}
 }
 
 func TestNewBytesTag(t *testing.T) {
-	id := TagID(1234567)
+	id := tags.TagID(1234567)
 	var tag *BytesTag = NewBytesTag(id)
 	assert.Equal(t, id, tag.Id())
 }
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 func TestBigIntTag(t *testing.T) {
-	var _ ILTag = (*BigIntTag)(nil)
+	var _ tags.ILTag = (*BigIntTag)(nil)
 
 	var tag BigIntTag
-	assert.True(t, AssertStructEmbeds(tag, ILTagHeaderImpl{}))
+	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
 	assert.True(t, AssertStructEmbeds(tag, BigIntPayload{}))
 }
 
 func TestNewBigIntTag(t *testing.T) {
-	id := TagID(1234567)
+	id := tags.TagID(1234567)
 	var tag *BigIntTag = NewBigIntTag(id)
 	assert.Equal(t, id, tag.Id())
 }
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 func TestBigDecTag(t *testing.T) {
-	var _ ILTag = (*BigDecTag)(nil)
+	var _ tags.ILTag = (*BigDecTag)(nil)
 
 	var tag BigDecTag
-	assert.True(t, AssertStructEmbeds(tag, ILTagHeaderImpl{}))
+	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
 	assert.True(t, AssertStructEmbeds(tag, BigDecPayload{}))
 }
 
 func TestNewBigDecTag(t *testing.T) {
-	id := TagID(1234567)
+	id := tags.TagID(1234567)
 	var tag *BigDecTag = NewBigDecTag(id)
 	assert.Equal(t, id, tag.Id())
 }
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 func TestILIntArrayTag(t *testing.T) {
-	var _ ILTag = (*ILIntArrayTag)(nil)
+	var _ tags.ILTag = (*ILIntArrayTag)(nil)
 
 	var tag ILIntArrayTag
-	assert.True(t, AssertStructEmbeds(tag, ILTagHeaderImpl{}))
+	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
 	assert.True(t, AssertStructEmbeds(tag, ILIntArrayPayload{}))
 }
 
 func TestNewILIntArrayTag(t *testing.T) {
-	id := TagID(1234567)
+	id := tags.TagID(1234567)
 	var tag *ILIntArrayTag = NewILIntArrayTag(id)
 	assert.Equal(t, id, tag.Id())
 }
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 func TestILTagArrayTag(t *testing.T) {
-	var _ ILTag = (*ILTagArrayTag)(nil)
+	var _ tags.ILTag = (*ILTagArrayTag)(nil)
 
 	var tag ILTagArrayTag
-	assert.True(t, AssertStructEmbeds(tag, ILTagHeaderImpl{}))
+	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
 	assert.True(t, AssertStructEmbeds(tag, ILTagArrayPayload{}))
 }
 
 func TestNewILTagArrayTag(t *testing.T) {
-	id := TagID(1234567)
+	id := tags.TagID(1234567)
 	var tag *ILTagArrayTag = NewILTagArrayTag(id)
 	assert.Equal(t, id, tag.Id())
 }
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 func TestILTagSequenceTag(t *testing.T) {
-	var _ ILTag = (*ILTagSequenceTag)(nil)
+	var _ tags.ILTag = (*ILTagSequenceTag)(nil)
 
 	var tag ILTagSequenceTag
-	assert.True(t, AssertStructEmbeds(tag, ILTagHeaderImpl{}))
+	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
 	assert.True(t, AssertStructEmbeds(tag, ILTagSequencePayload{}))
 }
 
 func TestNewILTagSequenceTag(t *testing.T) {
-	id := TagID(1234567)
+	id := tags.TagID(1234567)
 	var tag *ILTagSequenceTag = NewILTagSequenceTag(id)
 	assert.Equal(t, id, tag.Id())
 }
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 func TestRangeTag(t *testing.T) {
-	var _ ILTag = (*RangeTag)(nil)
+	var _ tags.ILTag = (*RangeTag)(nil)
 
 	var tag RangeTag
-	assert.True(t, AssertStructEmbeds(tag, ILTagHeaderImpl{}))
+	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
 	assert.True(t, AssertStructEmbeds(tag, RangePayload{}))
 }
 
 func TestNewRangeTag(t *testing.T) {
-	id := TagID(1234567)
+	id := tags.TagID(1234567)
 	var tag *RangeTag = NewRangeTag(id)
 	assert.Equal(t, id, tag.Id())
 }
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 func TestVersionTag(t *testing.T) {
-	var _ ILTag = (*VersionTag)(nil)
+	var _ tags.ILTag = (*VersionTag)(nil)
 
 	var tag VersionTag
-	assert.True(t, AssertStructEmbeds(tag, ILTagHeaderImpl{}))
+	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
 	assert.True(t, AssertStructEmbeds(tag, VersionPayload{}))
 }
 
 func TestNewVersionTag(t *testing.T) {
-	id := TagID(1234567)
+	id := tags.TagID(1234567)
 	var tag *VersionTag = NewVersionTag(id)
 	assert.Equal(t, id, tag.Id())
 }
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 func TestOIDTag(t *testing.T) {
-	var _ ILTag = (*OIDTag)(nil)
+	var _ tags.ILTag = (*OIDTag)(nil)
 	var _ ILIntArrayTag = OIDTag{}
 }
 
 func TestNewOIDTag(t *testing.T) {
-	id := TagID(1234567)
+	id := tags.TagID(1234567)
 	var tag *OIDTag = NewOIDTag(id)
 	assert.Equal(t, id, tag.Id())
 }
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 func TestStringDictionaryTag(t *testing.T) {
-	var _ ILTag = (*StringDictionaryTag)(nil)
+	var _ tags.ILTag = (*StringDictionaryTag)(nil)
 
 	var tag StringDictionaryTag
-	assert.True(t, AssertStructEmbeds(tag, ILTagHeaderImpl{}))
+	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
 	assert.True(t, AssertStructEmbeds(tag, StringDictionaryPayload{}))
 }
 
 func TestNewStringDictionaryTag(t *testing.T) {
-	id := TagID(1234567)
+	id := tags.TagID(1234567)
 	var tag *StringDictionaryTag = NewStringDictionaryTag(id)
 	assert.Equal(t, id, tag.Id())
 }
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 func TestDictionaryTag(t *testing.T) {
-	var _ ILTag = (*DictionaryTag)(nil)
+	var _ tags.ILTag = (*DictionaryTag)(nil)
 
 	var tag DictionaryTag
-	assert.True(t, AssertStructEmbeds(tag, ILTagHeaderImpl{}))
+	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
 	assert.True(t, AssertStructEmbeds(tag, DictionaryPayload{}))
 }
 
 func TestNewDictionaryTag(t *testing.T) {
-	id := TagID(1234567)
+	id := tags.TagID(1234567)
 	var tag *DictionaryTag = NewDictionaryTag(id)
 	assert.Equal(t, id, tag.Id())
 }

@@ -51,3 +51,24 @@ type ILTagHeader interface {
 	*/
 	Reserved() bool
 }
+
+// This struct is the base implementation of the ILTagHeader interface.
+type ILTagHeaderImpl struct {
+	id TagID
+}
+
+func (h *ILTagHeaderImpl) Id() TagID {
+	return h.id
+}
+
+func (h *ILTagHeaderImpl) SetId(id TagID) {
+	h.id = id
+}
+
+func (h *ILTagHeaderImpl) Implicit() bool {
+	return h.id.Implicit()
+}
+
+func (h *ILTagHeaderImpl) Reserved() bool {
+	return h.id.Reserved()
+}

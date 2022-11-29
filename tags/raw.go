@@ -30,29 +30,60 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package impl
+package tags
 
 import (
-	. "github.com/interlockledger/go-iltags/tags"
+	"io"
+
+	"github.com/interlockledger/go-iltags/serialization"
 )
 
-// This struct is the base implementation of the ILTagHeader interface.
-type ILTagHeaderImpl struct {
-	id TagID
+//------------------------------------------------------------------------------
+
+// Implementation of the raw payload.
+type RawPayload struct {
+	Payload []byte
 }
 
-func (h *ILTagHeaderImpl) Id() TagID {
-	return h.id
+// Implementation of ILTagPayload.ValueSize().
+func (p *RawPayload) ValueSize() uint64 {
+	if p.Payload != nil {
+		return uint64(len(p.Payload))
+	} else {
+		return 0
+	}
 }
 
-func (h *ILTagHeaderImpl) SetId(id TagID) {
-	h.id = id
+// Implementation of ILTagPayload.SerializeValue()
+func (p *RawPayload) SerializeValue(writer io.Writer) error {
+	if p.Payload != nil {
+		return serialization.WriteBytes(writer, p.Payload)
+	}
+	return nil
 }
 
-func (h *ILTagHeaderImpl) Implicit() bool {
-	return h.id.Implicit()
+// Implementation of ILTagPayload.DeserializeValue()
+func (p *RawPayload) DeserializeValue(factory ILTagFactory, valueSize int, reader io.Reader) error {
+	if valueSize < 0 {
+		return ErrBadTagFormat
+	}
+	p.Payload = make([]byte, valueSize)
+	if valueSize > 0 {
+		return serialization.ReadBytes(reader, p.Payload)
+	} else {
+		return nil
+	}
 }
 
-func (h *ILTagHeaderImpl) Reserved() bool {
-	return h.id.Reserved()
+// Implementation of the raw tag.
+type RawTag struct {
+	ILTagHeaderImpl
+	RawPayload
+}
+
+// Create a new RawTag.
+func NewRawTag(id TagID) *RawTag {
+	var t RawTag
+	t.SetId(id)
+	return &t
 }

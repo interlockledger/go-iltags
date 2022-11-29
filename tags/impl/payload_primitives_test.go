@@ -37,12 +37,12 @@ import (
 	"testing"
 
 	"github.com/interlockledger/go-iltags/ilint"
-	. "github.com/interlockledger/go-iltags/tags"
+	"github.com/interlockledger/go-iltags/tags"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNullPayload(t *testing.T) {
-	var _ ILTagPayload = (*NullPayload)(nil)
+	var _ tags.ILTagPayload = (*NullPayload)(nil)
 
 	var tag NullPayload
 
@@ -59,11 +59,11 @@ func TestNullPayload(t *testing.T) {
 	f := &mockFactory{}
 	assert.Nil(t, tag.DeserializeValue(f, 0, r))
 
-	assert.ErrorIs(t, tag.DeserializeValue(f, 1, r), ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 1, r), tags.ErrBadTagFormat)
 }
 
 func TestBoolPayload(t *testing.T) {
-	var _ ILTagPayload = (*BoolPayload)(nil)
+	var _ tags.ILTagPayload = (*BoolPayload)(nil)
 
 	var tag BoolPayload
 	// Size
@@ -79,7 +79,7 @@ func TestBoolPayload(t *testing.T) {
 	assert.Nil(t, tag.SerializeValue(w))
 	assert.Equal(t, []byte{0x01}, w.Bytes())
 
-	// Deserialize
+	// Deserializetags.ILTag
 	r := bytes.NewReader([]byte{0x00})
 	f := &mockFactory{}
 	assert.Nil(t, tag.DeserializeValue(f, 1, r))
@@ -91,12 +91,12 @@ func TestBoolPayload(t *testing.T) {
 
 	r = bytes.NewReader([]byte{0x02})
 	assert.Error(t, tag.DeserializeValue(f, 1, r))
-	assert.ErrorIs(t, tag.DeserializeValue(f, 0, r), ErrBadTagFormat)
-	assert.ErrorIs(t, tag.DeserializeValue(f, 2, r), ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 0, r), tags.ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 2, r), tags.ErrBadTagFormat)
 }
 
 func TestUInt8Payload(t *testing.T) {
-	var _ ILTagPayload = (*UInt8Payload)(nil)
+	var _ tags.ILTagPayload = (*UInt8Payload)(nil)
 
 	var tag UInt8Payload
 	// Size
@@ -122,12 +122,12 @@ func TestUInt8Payload(t *testing.T) {
 	f = &mockFactory{}
 	assert.Error(t, tag.DeserializeValue(f, 1, r))
 
-	assert.ErrorIs(t, tag.DeserializeValue(f, 0, r), ErrBadTagFormat)
-	assert.ErrorIs(t, tag.DeserializeValue(f, 2, r), ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 0, r), tags.ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 2, r), tags.ErrBadTagFormat)
 }
 
 func TestInt8Payload(t *testing.T) {
-	var _ ILTagPayload = (*Int8Payload)(nil)
+	var _ tags.ILTagPayload = (*Int8Payload)(nil)
 
 	var tag Int8Payload
 	// Size
@@ -153,12 +153,12 @@ func TestInt8Payload(t *testing.T) {
 	f = &mockFactory{}
 	assert.Error(t, tag.DeserializeValue(f, 1, r))
 
-	assert.ErrorIs(t, tag.DeserializeValue(f, 0, r), ErrBadTagFormat)
-	assert.ErrorIs(t, tag.DeserializeValue(f, 2, r), ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 0, r), tags.ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 2, r), tags.ErrBadTagFormat)
 }
 
 func TestUInt16Payload(t *testing.T) {
-	var _ ILTagPayload = (*UInt16Payload)(nil)
+	var _ tags.ILTagPayload = (*UInt16Payload)(nil)
 
 	var tag UInt16Payload
 	// Size
@@ -184,12 +184,12 @@ func TestUInt16Payload(t *testing.T) {
 	f = &mockFactory{}
 	assert.Error(t, tag.DeserializeValue(f, 2, r))
 
-	assert.ErrorIs(t, tag.DeserializeValue(f, 1, r), ErrBadTagFormat)
-	assert.ErrorIs(t, tag.DeserializeValue(f, 3, r), ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 1, r), tags.ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 3, r), tags.ErrBadTagFormat)
 }
 
 func TestInt16Payload(t *testing.T) {
-	var _ ILTagPayload = (*Int16Payload)(nil)
+	var _ tags.ILTagPayload = (*Int16Payload)(nil)
 
 	var tag Int16Payload
 	// Size
@@ -215,12 +215,12 @@ func TestInt16Payload(t *testing.T) {
 	f = &mockFactory{}
 	assert.Error(t, tag.DeserializeValue(f, 2, r))
 
-	assert.ErrorIs(t, tag.DeserializeValue(f, 1, r), ErrBadTagFormat)
-	assert.ErrorIs(t, tag.DeserializeValue(f, 3, r), ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 1, r), tags.ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 3, r), tags.ErrBadTagFormat)
 }
 
 func TestUInt32Payload(t *testing.T) {
-	var _ ILTagPayload = (*UInt32Payload)(nil)
+	var _ tags.ILTagPayload = (*UInt32Payload)(nil)
 
 	var tag UInt32Payload
 	// Size
@@ -246,12 +246,12 @@ func TestUInt32Payload(t *testing.T) {
 	f = &mockFactory{}
 	assert.Error(t, tag.DeserializeValue(f, 4, r))
 
-	assert.ErrorIs(t, tag.DeserializeValue(f, 3, r), ErrBadTagFormat)
-	assert.ErrorIs(t, tag.DeserializeValue(f, 5, r), ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 3, r), tags.ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 5, r), tags.ErrBadTagFormat)
 }
 
 func TestInt32Payload(t *testing.T) {
-	var _ ILTagPayload = (*Int32Payload)(nil)
+	var _ tags.ILTagPayload = (*Int32Payload)(nil)
 
 	var tag Int32Payload
 	// Size
@@ -277,12 +277,12 @@ func TestInt32Payload(t *testing.T) {
 	f = &mockFactory{}
 	assert.Error(t, tag.DeserializeValue(f, 4, r))
 
-	assert.ErrorIs(t, tag.DeserializeValue(f, 1, r), ErrBadTagFormat)
-	assert.ErrorIs(t, tag.DeserializeValue(f, 3, r), ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 1, r), tags.ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 3, r), tags.ErrBadTagFormat)
 }
 
 func TestUInt64Payload(t *testing.T) {
-	var _ ILTagPayload = (*UInt64Payload)(nil)
+	var _ tags.ILTagPayload = (*UInt64Payload)(nil)
 
 	var tag UInt64Payload
 	// Size
@@ -308,12 +308,12 @@ func TestUInt64Payload(t *testing.T) {
 	f = &mockFactory{}
 	assert.Error(t, tag.DeserializeValue(f, 8, r))
 
-	assert.ErrorIs(t, tag.DeserializeValue(f, 7, r), ErrBadTagFormat)
-	assert.ErrorIs(t, tag.DeserializeValue(f, 9, r), ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 7, r), tags.ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 9, r), tags.ErrBadTagFormat)
 }
 
 func TestInt64Payload(t *testing.T) {
-	var _ ILTagPayload = (*Int64Payload)(nil)
+	var _ tags.ILTagPayload = (*Int64Payload)(nil)
 
 	var tag Int64Payload
 	// Size
@@ -339,12 +339,12 @@ func TestInt64Payload(t *testing.T) {
 	f = &mockFactory{}
 	assert.Error(t, tag.DeserializeValue(f, 8, r))
 
-	assert.ErrorIs(t, tag.DeserializeValue(f, 7, r), ErrBadTagFormat)
-	assert.ErrorIs(t, tag.DeserializeValue(f, 9, r), ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 7, r), tags.ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 9, r), tags.ErrBadTagFormat)
 }
 
 func TestFloat32Payload(t *testing.T) {
-	var _ ILTagPayload = (*Float32Payload)(nil)
+	var _ tags.ILTagPayload = (*Float32Payload)(nil)
 
 	var tag Float32Payload
 	// Size
@@ -370,12 +370,12 @@ func TestFloat32Payload(t *testing.T) {
 	f = &mockFactory{}
 	assert.Error(t, tag.DeserializeValue(f, 4, r))
 
-	assert.ErrorIs(t, tag.DeserializeValue(f, 3, r), ErrBadTagFormat)
-	assert.ErrorIs(t, tag.DeserializeValue(f, 5, r), ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 3, r), tags.ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 5, r), tags.ErrBadTagFormat)
 }
 
 func TestFloat64Payload(t *testing.T) {
-	var _ ILTagPayload = (*Float64Payload)(nil)
+	var _ tags.ILTagPayload = (*Float64Payload)(nil)
 
 	var tag Float64Payload
 	// Size
@@ -401,12 +401,12 @@ func TestFloat64Payload(t *testing.T) {
 	f = &mockFactory{}
 	assert.Error(t, tag.DeserializeValue(f, 8, r))
 
-	assert.ErrorIs(t, tag.DeserializeValue(f, 7, r), ErrBadTagFormat)
-	assert.ErrorIs(t, tag.DeserializeValue(f, 9, r), ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 7, r), tags.ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 9, r), tags.ErrBadTagFormat)
 }
 
 func TestFloat128Payload(t *testing.T) {
-	var _ ILTagPayload = (*Float128Payload)(nil)
+	var _ tags.ILTagPayload = (*Float128Payload)(nil)
 	sample := []byte{0x3f, 0xbf, 0x97, 0x24, 0x74, 0x53, 0x8e, 0xf3, 0x3f, 0xbf, 0x97, 0x24, 0x74, 0x53, 0x8e, 0xf3}
 
 	var tag Float128Payload
@@ -433,8 +433,8 @@ func TestFloat128Payload(t *testing.T) {
 	f = &mockFactory{}
 	assert.Error(t, tag.DeserializeValue(f, 8, r))
 
-	assert.ErrorIs(t, tag.DeserializeValue(f, 15, r), ErrBadTagFormat)
-	assert.ErrorIs(t, tag.DeserializeValue(f, 17, r), ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 15, r), tags.ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 17, r), tags.ErrBadTagFormat)
 }
 
 func TestFloat128PayloadSetPayload(t *testing.T) {
@@ -460,7 +460,7 @@ func TestFloat128PayloadSetPayload(t *testing.T) {
 }
 
 func TestILIntPayload(t *testing.T) {
-	var _ ILTagPayload = (*ILIntPayload)(nil)
+	var _ tags.ILTagPayload = (*ILIntPayload)(nil)
 	val := uint64(0x1231231313132)
 	sample := ilint.Encode(val, nil)
 
@@ -494,7 +494,7 @@ func TestILIntPayload(t *testing.T) {
 }
 
 func TestSignedILIntPayload(t *testing.T) {
-	var _ ILTagPayload = (*SignedILIntPayload)(nil)
+	var _ tags.ILTagPayload = (*SignedILIntPayload)(nil)
 	val := int64(-231231313132)
 	sample := ilint.EncodeSigned(val, nil)
 

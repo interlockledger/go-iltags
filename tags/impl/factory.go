@@ -33,18 +33,18 @@
 package impl
 
 import (
-	. "github.com/interlockledger/go-iltags/tags"
+	"github.com/interlockledger/go-iltags/tags"
 )
 
 // This is the type of the common interface for all ILTag creators.
-type TagCreatorFunc func(TagID) ILTag
+type TagCreatorFunc func(tags.TagID) tags.ILTag
 
 // Standard tag factory. At general, instances of this struct can be considred
 // thread safe if if is acessed ILTag
 type StandardTagFactory struct {
 	// Strict mode. If true, unknown tags will result in an Ir true
 	Strict      bool
-	tagCreators map[TagID]TagCreatorFunc
+	tagCreators map[tags.TagID]TagCreatorFunc
 }
 
 // Creates a new StandardTagFactory instance.
@@ -54,31 +54,31 @@ func NewStandardTagFactory(strict bool) *StandardTagFactory {
 
 // Registers a custom tag creator for the given Tag ID. Only non reserved ids
 // can be registered.
-func (f *StandardTagFactory) RegisterTag(tagId TagID, tagCreator TagCreatorFunc) {
+func (f *StandardTagFactory) RegisterTag(tagId tags.TagID, tagCreator TagCreatorFunc) {
 	if tagId.Reserved() {
 		panic("Reserved tags cannot be overriden.")
 	}
 	if f.tagCreators == nil {
-		f.tagCreators = make(map[TagID]TagCreatorFunc, 8)
+		f.tagCreators = make(map[tags.TagID]TagCreatorFunc, 8)
 	}
 	f.tagCreators[tagId] = tagCreator
 }
 
 // Creates a non reserved tag using the creator map.
-func (f *StandardTagFactory) createTagFromCreators(tagId TagID) (ILTag, error) {
+func (f *StandardTagFactory) createTagFromCreators(tagId tags.TagID) (tags.ILTag, error) {
 	c := f.tagCreators[tagId]
 	if c != nil {
 		return c(tagId), nil
 	} else if f.Strict {
-		return nil, NewErrUnsupportedTagId(tagId)
+		return nil, tags.NewErrUnsupportedTagId(tagId)
 	} else {
-		return NewRawTag(tagId), nil
+		return tags.NewRawTag(tagId), nil
 	}
 }
 
 // Creates an initialized tag that implements the given tag ID. Returns nil
 // if the ID is not supported.
-func (f *StandardTagFactory) CreateTag(tagId TagID) (ILTag, error) {
+func (f *StandardTagFactory) CreateTag(tagId tags.TagID) (tags.ILTag, error) {
 	if tagId.Reserved() {
 		return NewStandardTag(tagId)
 	} else {

@@ -33,205 +33,205 @@
 package impl
 
 import (
-	. "github.com/interlockledger/go-iltags/tags"
+	"github.com/interlockledger/go-iltags/tags"
 )
 
 // Create a new standard NullTag.
 func NewStdNullTag() *NullTag {
-	return NewNullTag(IL_NULL_TAG_ID)
+	return NewNullTag(tags.IL_NULL_TAG_ID)
 }
 
 // Create a new standard BoolTag.
 func NewStdBoolTag() *BoolTag {
-	return NewBoolTag(IL_BOOL_TAG_ID)
+	return NewBoolTag(tags.IL_BOOL_TAG_ID)
 }
 
 // Create a new standard UInt8Tag.
 func NewStdUInt8Tag() *UInt8Tag {
-	return NewUInt8Tag(IL_UINT8_TAG_ID)
+	return NewUInt8Tag(tags.IL_UINT8_TAG_ID)
 }
 
 // Create a new standard UInt8Tag.
 func NewStdInt8Tag() *Int8Tag {
-	return NewInt8Tag(IL_INT8_TAG_ID)
+	return NewInt8Tag(tags.IL_INT8_TAG_ID)
 }
 
 // Create a new standard UInt16Tag.
 func NewStdUInt16Tag() *UInt16Tag {
-	return NewUInt16Tag(IL_UINT16_TAG_ID)
+	return NewUInt16Tag(tags.IL_UINT16_TAG_ID)
 }
 
 // Create a new standard UInt16Tag.
 func NewStdInt16Tag() *Int16Tag {
-	return NewInt16Tag(IL_INT16_TAG_ID)
+	return NewInt16Tag(tags.IL_INT16_TAG_ID)
 }
 
 // Create a new standard UInt32Tag.
 func NewStdUInt32Tag() *UInt32Tag {
-	return NewUInt32Tag(IL_UINT32_TAG_ID)
+	return NewUInt32Tag(tags.IL_UINT32_TAG_ID)
 }
 
 // Create a new standard Int32Tag.
 func NewStdInt32Tag() *Int32Tag {
-	return NewInt32Tag(IL_INT32_TAG_ID)
+	return NewInt32Tag(tags.IL_INT32_TAG_ID)
 }
 
 // Create a new standard UInt64Tag.
 func NewStdUInt64Tag() *UInt64Tag {
-	return NewUInt64Tag(IL_UINT64_TAG_ID)
+	return NewUInt64Tag(tags.IL_UINT64_TAG_ID)
 }
 
 // Create a new standard Int64Tag.
 func NewStdInt64Tag() *Int64Tag {
-	return NewInt64Tag(IL_INT64_TAG_ID)
+	return NewInt64Tag(tags.IL_INT64_TAG_ID)
 }
 
 // Create a new standard ILIntTag.
 func NewStdILIntTag() *ILIntTag {
-	return NewILIntTag(IL_ILINT_TAG_ID)
+	return NewILIntTag(tags.IL_ILINT_TAG_ID)
 }
 
 // Create a new standard Float32Tag.
 func NewStdFloat32Tag() *Float32Tag {
-	return NewFloat32Tag(IL_BIN32_TAG_ID)
+	return NewFloat32Tag(tags.IL_BIN32_TAG_ID)
 }
 
 // Create a new standard Float32Tag.
 func NewStdFloat64Tag() *Float64Tag {
-	return NewFloat64Tag(IL_BIN64_TAG_ID)
+	return NewFloat64Tag(tags.IL_BIN64_TAG_ID)
 }
 
 // Create a new standard Float64Tag.
 func NewStdFloat128Tag() *Float128Tag {
-	return NewFloat128Tag(IL_BIN128_TAG_ID)
+	return NewFloat128Tag(tags.IL_BIN128_TAG_ID)
 }
 
 // Create a new standard SignedILIntTag.
 func NewStdSignedILIntTag() *SignedILIntTag {
-	return NewSignedILIntTag(IL_SIGNED_ILINT_TAG_ID)
+	return NewSignedILIntTag(tags.IL_SIGNED_ILINT_TAG_ID)
 }
 
 // Create a new standard BytesTag.
-func NewStdBytesTag() *RawTag {
-	return NewRawTag(IL_BYTES_TAG_ID)
+func NewStdBytesTag() *tags.RawTag {
+	return tags.NewRawTag(tags.IL_BYTES_TAG_ID)
 }
 
 // Create a new standard StringTag.
 func NewStdStringTag() *StringTag {
-	return NewStringTag(IL_STRING_TAG_ID)
+	return NewStringTag(tags.IL_STRING_TAG_ID)
 }
 
 // Create a new standard BigIntTag.
 func NewStdBigIntTag() *BigIntTag {
-	return NewBigIntTag(IL_BINT_TAG_ID)
+	return NewBigIntTag(tags.IL_BINT_TAG_ID)
 }
 
 // Create a new standard BigDecTag.
 func NewStdBigDecTag() *BigDecTag {
-	return NewBigDecTag(IL_BDEC_TAG_ID)
+	return NewBigDecTag(tags.IL_BDEC_TAG_ID)
 }
 
 // Create a new standard ILIntArrayTag.
 func NewStdILIntArrayTag() *ILIntArrayTag {
-	return NewILIntArrayTag(IL_ILINTARRAY_TAG_ID)
+	return NewILIntArrayTag(tags.IL_ILINTARRAY_TAG_ID)
 }
 
 // Create a new standard ILTagArrayTag.
 func NewStdILTagArrayTag() *ILTagArrayTag {
-	return NewILTagArrayTag(IL_ILTAGARRAY_TAG_ID)
+	return NewILTagArrayTag(tags.IL_ILTAGARRAY_TAG_ID)
 }
 
 // Create a new standard ILTagSequenceTag.
 func NewStdILTagSequenceTag() *ILTagSequenceTag {
-	return NewILTagSequenceTag(IL_ILTAGSEQ_TAG_ID)
+	return NewILTagSequenceTag(tags.IL_ILTAGSEQ_TAG_ID)
 }
 
 // Create a new standard RangeTag.
 func NewStdRangeTag() *RangeTag {
-	return NewRangeTag(IL_RANGE_TAG_ID)
+	return NewRangeTag(tags.IL_RANGE_TAG_ID)
 }
 
 // Create a new standard VersionTag.
 func NewStdVersionTag() *VersionTag {
-	return NewVersionTag(IL_VERSION_TAG_ID)
+	return NewVersionTag(tags.IL_VERSION_TAG_ID)
 }
 
 // Create a new standard OIDTag.
 func NewStdOIDTag() *OIDTag {
-	return NewOIDTag(IL_OID_TAG_ID)
+	return NewOIDTag(tags.IL_OID_TAG_ID)
 }
 
 // Create a new standard DictionaryTag.
 func NewStdDictionaryTag() *DictionaryTag {
-	return NewDictionaryTag(IL_DICTIONARY_TAG_ID)
+	return NewDictionaryTag(tags.IL_DICTIONARY_TAG_ID)
 }
 
 // Create a new standard StringDictionaryTag.
 func NewStdStringDictionaryTag() *StringDictionaryTag {
-	return NewStringDictionaryTag(IL_STRING_DICTIONARY_TAG_ID)
+	return NewStringDictionaryTag(tags.IL_STRING_DICTIONARY_TAG_ID)
 }
 
 // Creates a new standard ILTag. It returns an error if the ID is not a standard
 // tag or if the tag is not defined.
-func NewStandardTag(id TagID) (ILTag, error) {
-	var t ILTag
+func NewStandardTag(id tags.TagID) (tags.ILTag, error) {
+	var t tags.ILTag
 	switch id {
-	case IL_NULL_TAG_ID:
+	case tags.IL_NULL_TAG_ID:
 		t = NewStdNullTag()
-	case IL_BOOL_TAG_ID:
+	case tags.IL_BOOL_TAG_ID:
 		t = NewStdBoolTag()
-	case IL_INT8_TAG_ID:
+	case tags.IL_INT8_TAG_ID:
 		t = NewStdInt8Tag()
-	case IL_UINT8_TAG_ID:
+	case tags.IL_UINT8_TAG_ID:
 		t = NewStdUInt8Tag()
-	case IL_INT16_TAG_ID:
+	case tags.IL_INT16_TAG_ID:
 		t = NewStdInt16Tag()
-	case IL_UINT16_TAG_ID:
+	case tags.IL_UINT16_TAG_ID:
 		t = NewStdUInt16Tag()
-	case IL_INT32_TAG_ID:
+	case tags.IL_INT32_TAG_ID:
 		t = NewStdInt32Tag()
-	case IL_UINT32_TAG_ID:
+	case tags.IL_UINT32_TAG_ID:
 		t = NewStdUInt32Tag()
-	case IL_INT64_TAG_ID:
+	case tags.IL_INT64_TAG_ID:
 		t = NewStdInt64Tag()
-	case IL_UINT64_TAG_ID:
+	case tags.IL_UINT64_TAG_ID:
 		t = NewStdUInt64Tag()
-	case IL_ILINT_TAG_ID:
+	case tags.IL_ILINT_TAG_ID:
 		t = NewStdILIntTag()
-	case IL_BIN32_TAG_ID:
+	case tags.IL_BIN32_TAG_ID:
 		t = NewStdFloat32Tag()
-	case IL_BIN64_TAG_ID:
+	case tags.IL_BIN64_TAG_ID:
 		t = NewStdFloat64Tag()
-	case IL_BIN128_TAG_ID:
+	case tags.IL_BIN128_TAG_ID:
 		t = NewStdFloat128Tag()
-	case IL_SIGNED_ILINT_TAG_ID:
+	case tags.IL_SIGNED_ILINT_TAG_ID:
 		t = NewStdSignedILIntTag()
-	case IL_BYTES_TAG_ID:
+	case tags.IL_BYTES_TAG_ID:
 		t = NewStdBytesTag()
-	case IL_STRING_TAG_ID:
+	case tags.IL_STRING_TAG_ID:
 		t = NewStdStringTag()
-	case IL_BINT_TAG_ID:
+	case tags.IL_BINT_TAG_ID:
 		t = NewStdBigIntTag()
-	case IL_BDEC_TAG_ID:
+	case tags.IL_BDEC_TAG_ID:
 		t = NewStdBigDecTag()
-	case IL_ILINTARRAY_TAG_ID:
+	case tags.IL_ILINTARRAY_TAG_ID:
 		t = NewStdILIntArrayTag()
-	case IL_ILTAGARRAY_TAG_ID:
+	case tags.IL_ILTAGARRAY_TAG_ID:
 		t = NewStdILTagArrayTag()
-	case IL_ILTAGSEQ_TAG_ID:
+	case tags.IL_ILTAGSEQ_TAG_ID:
 		t = NewStdILTagSequenceTag()
-	case IL_RANGE_TAG_ID:
+	case tags.IL_RANGE_TAG_ID:
 		t = NewStdRangeTag()
-	case IL_VERSION_TAG_ID:
+	case tags.IL_VERSION_TAG_ID:
 		t = NewStdVersionTag()
-	case IL_OID_TAG_ID:
+	case tags.IL_OID_TAG_ID:
 		t = NewStdOIDTag()
-	case IL_DICTIONARY_TAG_ID:
+	case tags.IL_DICTIONARY_TAG_ID:
 		t = NewStdDictionaryTag()
-	case IL_STRING_DICTIONARY_TAG_ID:
+	case tags.IL_STRING_DICTIONARY_TAG_ID:
 		t = NewStdStringDictionaryTag()
 	default:
-		return nil, NewErrUnsupportedTagId(id)
+		return nil, tags.NewErrUnsupportedTagId(id)
 	}
 	return t, nil
 }

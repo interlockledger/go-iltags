@@ -39,7 +39,7 @@ import (
 
 	"github.com/interlockledger/go-iltags/ilint"
 	"github.com/interlockledger/go-iltags/serialization"
-	. "github.com/interlockledger/go-iltags/tags"
+	"github.com/interlockledger/go-iltags/tags"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -60,57 +60,8 @@ func (w *limitedDummyWriter) Write(b []byte) (int, error) {
 	return int(n), nil
 }
 
-func TestRawPayload(t *testing.T) {
-	var _ ILTagPayload = (*RawPayload)(nil)
-	sample := []byte("And so it begins. You have forgotten something, Commander.")
-
-	var tag RawPayload
-
-	// Size
-	assert.Equal(t, uint64(0), tag.ValueSize())
-	tag.Payload = []byte{}
-	assert.Equal(t, uint64(0), tag.ValueSize())
-	tag.Payload = sample
-	assert.Equal(t, uint64(len(sample)), tag.ValueSize())
-
-	// Serialize
-	w := bytes.NewBuffer(nil)
-	tag.Payload = nil
-	assert.Nil(t, tag.SerializeValue(w))
-	assert.Nil(t, w.Bytes())
-
-	w = bytes.NewBuffer(nil)
-	tag.Payload = []byte{}
-	assert.Nil(t, tag.SerializeValue(w))
-	assert.Nil(t, w.Bytes())
-
-	w = bytes.NewBuffer(nil)
-	tag.Payload = sample
-	assert.Nil(t, tag.SerializeValue(w))
-	assert.Equal(t, sample, w.Bytes())
-
-	// Deserialize
-	r := bytes.NewReader([]byte{})
-	f := &mockFactory{}
-	tag.Payload = []byte{0xFF} // Just add garbage to ensure overwrite
-	assert.Nil(t, tag.DeserializeValue(f, 0, r))
-	assert.Equal(t, []byte{}, tag.Payload)
-
-	r = bytes.NewReader(sample)
-	assert.Nil(t, tag.DeserializeValue(f, 0, r))
-	assert.Equal(t, []byte{}, tag.Payload)
-
-	assert.Nil(t, tag.DeserializeValue(f, len(sample), r))
-	assert.Equal(t, sample, tag.Payload)
-
-	r = bytes.NewReader(sample)
-	assert.Error(t, tag.DeserializeValue(f, len(sample)+1, r))
-
-	assert.ErrorIs(t, tag.DeserializeValue(f, -1, r), ErrBadTagFormat)
-}
-
 func TestStringPayload(t *testing.T) {
-	var _ ILTagPayload = (*StringPayload)(nil)
+	var _ tags.ILTagPayload = (*StringPayload)(nil)
 	sample := "You have always been here."
 	encSample := []byte(sample)
 
@@ -150,11 +101,11 @@ func TestStringPayload(t *testing.T) {
 	r = bytes.NewReader(encSample)
 	assert.Error(t, tag.DeserializeValue(f, len(encSample)+1, r))
 
-	assert.ErrorIs(t, tag.DeserializeValue(f, -1, r), ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, -1, r), tags.ErrBadTagFormat)
 }
 
 func TestBigIntPayload(t *testing.T) {
-	var _ ILTagPayload = (*BigIntPayload)(nil)
+	var _ tags.ILTagPayload = (*BigIntPayload)(nil)
 	sample := []byte("If you go to Z'ha'dum, you will die.")
 
 	var tag BigIntPayload
@@ -197,12 +148,12 @@ func TestBigIntPayload(t *testing.T) {
 	r = bytes.NewReader(sample)
 	assert.Error(t, tag.DeserializeValue(f, len(sample)+1, r))
 
-	assert.ErrorIs(t, tag.DeserializeValue(f, -1, r), ErrBadTagFormat)
-	assert.ErrorIs(t, tag.DeserializeValue(f, 0, r), ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, -1, r), tags.ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 0, r), tags.ErrBadTagFormat)
 }
 
 func TestBigDecPayload(t *testing.T) {
-	var _ ILTagPayload = (*BigDecPayload)(nil)
+	var _ tags.ILTagPayload = (*BigDecPayload)(nil)
 	sample := []byte("If you go to Z'ha'dum, you will die.")
 	encoded := append(sample, 0x01, 0x23, 0x45, 0x67)
 
@@ -256,12 +207,12 @@ func TestBigDecPayload(t *testing.T) {
 	r = bytes.NewReader(encoded)
 	assert.Error(t, tag.DeserializeValue(f, len(encoded)+1, r))
 
-	assert.ErrorIs(t, tag.DeserializeValue(f, -1, r), ErrBadTagFormat)
-	assert.ErrorIs(t, tag.DeserializeValue(f, 0, r), ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, -1, r), tags.ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 0, r), tags.ErrBadTagFormat)
 }
 
 func TestILIntArrayPayload(t *testing.T) {
-	var _ ILTagPayload = (*ILIntArrayPayload)(nil)
+	var _ tags.ILTagPayload = (*ILIntArrayPayload)(nil)
 
 	var tag ILIntArrayPayload
 
@@ -334,17 +285,17 @@ func TestILIntArrayPayload(t *testing.T) {
 	f = &mockFactory{}
 	assert.Error(t, tag.DeserializeValue(f, 2, r))
 
-	assert.ErrorIs(t, tag.DeserializeValue(f, 0, r), ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 0, r), tags.ErrBadTagFormat)
 }
 
 func TestILTagArrayPayload(t *testing.T) {
-	var _ ILTagPayload = (*ILTagArrayPayload)(nil)
+	var _ tags.ILTagPayload = (*ILTagArrayPayload)(nil)
 
 	var tag ILTagArrayPayload
 
 	// Size
 	assert.Equal(t, uint64(1), tag.ValueSize())
-	tag.Payload = []ILTag{}
+	tag.Payload = []tags.ILTag{}
 	assert.Equal(t, uint64(1), tag.ValueSize())
 	for i := range []int{1, 256} {
 		sample, bin := CreateSampleILTagArray(i)
@@ -359,7 +310,7 @@ func TestILTagArrayPayload(t *testing.T) {
 	assert.Equal(t, []byte{0x00}, w.Bytes())
 
 	w = bytes.NewBuffer(nil)
-	tag.Payload = []ILTag{}
+	tag.Payload = []tags.ILTag{}
 	assert.Nil(t, tag.SerializeValue(w))
 	assert.Equal(t, []byte{0x00}, w.Bytes())
 
@@ -373,7 +324,7 @@ func TestILTagArrayPayload(t *testing.T) {
 	}
 
 	lw := &limitedDummyWriter{0}
-	tag.Payload = []ILTag{NewStdNullTag()}
+	tag.Payload = []tags.ILTag{NewStdNullTag()}
 	assert.Error(t, tag.SerializeValue(lw))
 
 	lw = &limitedDummyWriter{1}
@@ -382,9 +333,9 @@ func TestILTagArrayPayload(t *testing.T) {
 	// Deserialize
 	r := bytes.NewReader([]byte{0x00})
 	f := &StandardTagFactory{}
-	tag.Payload = []ILTag{NewStdNullTag()}
+	tag.Payload = []tags.ILTag{NewStdNullTag()}
 	assert.Nil(t, tag.DeserializeValue(f, 1, r))
-	assert.Equal(t, []ILTag{}, tag.Payload)
+	assert.Equal(t, []tags.ILTag{}, tag.Payload)
 
 	for i := range []int{1, 256} {
 		sample, bin := CreateSampleILTagArray(i)
@@ -406,17 +357,17 @@ func TestILTagArrayPayload(t *testing.T) {
 	r = bytes.NewReader([]byte{0x00, 0x00})
 	assert.Error(t, tag.DeserializeValue(f, 2, r))
 
-	assert.ErrorIs(t, tag.DeserializeValue(f, 0, r), ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 0, r), tags.ErrBadTagFormat)
 }
 
 func TestILTagSequencePayload(t *testing.T) {
-	var _ ILTagPayload = (*ILTagSequencePayload)(nil)
+	var _ tags.ILTagPayload = (*ILTagSequencePayload)(nil)
 
 	var tag ILTagSequencePayload
 
 	// Size
 	assert.Equal(t, uint64(0), tag.ValueSize())
-	tag.Payload = []ILTag{}
+	tag.Payload = []tags.ILTag{}
 	assert.Equal(t, uint64(0), tag.ValueSize())
 	for i := range []int{1, 256} {
 		sample, bin := CreateSampleILTagArray(i)
@@ -431,7 +382,7 @@ func TestILTagSequencePayload(t *testing.T) {
 	assert.Nil(t, w.Bytes())
 
 	w = bytes.NewBuffer(nil)
-	tag.Payload = []ILTag{}
+	tag.Payload = []tags.ILTag{}
 	assert.Nil(t, tag.SerializeValue(w))
 	assert.Nil(t, w.Bytes())
 
@@ -444,15 +395,15 @@ func TestILTagSequencePayload(t *testing.T) {
 	}
 
 	lw := &limitedDummyWriter{0}
-	tag.Payload = []ILTag{NewStdNullTag()}
+	tag.Payload = []tags.ILTag{NewStdNullTag()}
 	assert.Error(t, tag.SerializeValue(lw))
 
 	// Deserialize
 	r := bytes.NewReader([]byte{})
 	f := &StandardTagFactory{}
-	tag.Payload = []ILTag{NewStdNullTag()}
+	tag.Payload = []tags.ILTag{NewStdNullTag()}
 	assert.Nil(t, tag.DeserializeValue(f, 0, r))
-	assert.Equal(t, []ILTag{}, tag.Payload)
+	assert.Equal(t, []tags.ILTag{}, tag.Payload)
 
 	for i := range []int{1, 256} {
 		sample, bin := CreateSampleILTagArray(i)
@@ -467,11 +418,11 @@ func TestILTagSequencePayload(t *testing.T) {
 	r = bytes.NewReader([]byte{0x01})
 	assert.Error(t, tag.DeserializeValue(f, 2, r))
 
-	assert.ErrorIs(t, tag.DeserializeValue(f, -1, r), ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, -1, r), tags.ErrBadTagFormat)
 }
 
 func TestRangePayload(t *testing.T) {
-	var _ ILTagPayload = (*RangePayload)(nil)
+	var _ tags.ILTagPayload = (*RangePayload)(nil)
 
 	var tag RangePayload
 
@@ -521,11 +472,11 @@ func TestRangePayload(t *testing.T) {
 	r = bytes.NewReader([]byte{0xf9, 0xd9, 0xd8, 0xfa, 0xca})
 	assert.Error(t, tag.DeserializeValue(f, 3, r))
 
-	assert.ErrorIs(t, tag.DeserializeValue(f, 2, r), ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 2, r), tags.ErrBadTagFormat)
 }
 
 func TestVersionPayload(t *testing.T) {
-	var _ ILTagPayload = (*VersionPayload)(nil)
+	var _ tags.ILTagPayload = (*VersionPayload)(nil)
 	var tag VersionPayload
 	enc := []byte{
 		0x00, 0x00, 0x01, 0x23,
@@ -573,12 +524,12 @@ func TestVersionPayload(t *testing.T) {
 		r = bytes.NewReader(enc[:i])
 		assert.Error(t, tag.DeserializeValue(f, 16, r))
 	}
-	assert.ErrorIs(t, tag.DeserializeValue(f, 15, r), ErrBadTagFormat)
-	assert.ErrorIs(t, tag.DeserializeValue(f, 17, r), ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 15, r), tags.ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 17, r), tags.ErrBadTagFormat)
 }
 
 func TestStringDictionaryPayload(t *testing.T) {
-	var _ ILTagPayload = (*StringDictionaryPayload)(nil)
+	var _ tags.ILTagPayload = (*StringDictionaryPayload)(nil)
 	sample, binSample := CreateSampleStringArray(512)
 	encoded := append(ilint.Encode(uint64(len(sample)/2), nil), binSample...)
 
@@ -655,14 +606,14 @@ func TestStringDictionaryPayload(t *testing.T) {
 
 	// More entries than bytes
 	r = bytes.NewReader(encoded)
-	assert.ErrorIs(t, tag.DeserializeValue(f, len(encoded)-1, r), ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, len(encoded)-1, r), tags.ErrBadTagFormat)
 
 	// Bad size
-	assert.ErrorIs(t, tag.DeserializeValue(f, 0, r), ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 0, r), tags.ErrBadTagFormat)
 }
 
 func TestDictionaryPayload(t *testing.T) {
-	var _ ILTagPayload = (*DictionaryPayload)(nil)
+	var _ tags.ILTagPayload = (*DictionaryPayload)(nil)
 	sampleKeys, _ := CreateSampleStringArray(256)
 	sampleObjects, _ := CreateSampleILTagArray(256)
 
@@ -672,7 +623,7 @@ func TestDictionaryPayload(t *testing.T) {
 		k := sampleKeys[i]
 		v := sampleObjects[i]
 		require.Nil(t, SerializeStdStringTag(k, b))
-		require.Nil(t, ILTagSeralize(v, b))
+		require.Nil(t, tags.ILTagSeralize(v, b))
 	}
 	encoded := b.Bytes()
 
@@ -751,8 +702,8 @@ func TestDictionaryPayload(t *testing.T) {
 	// More entries than bytes
 	encoded = []byte{0x01, 0x11, 0x00, 0x00} // 1 entry with 1 empty and a null tag
 	r = bytes.NewReader(encoded)
-	assert.ErrorIs(t, tag.DeserializeValue(f, len(encoded)-1, r), ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, len(encoded)-1, r), tags.ErrBadTagFormat)
 
 	// Bad size
-	assert.ErrorIs(t, tag.DeserializeValue(f, 0, r), ErrBadTagFormat)
+	assert.ErrorIs(t, tag.DeserializeValue(f, 0, r), tags.ErrBadTagFormat)
 }

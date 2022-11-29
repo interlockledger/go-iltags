@@ -42,7 +42,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/interlockledger/go-iltags/serialization"
-	. "github.com/interlockledger/go-iltags/tags"
+	"github.com/interlockledger/go-iltags/tags"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -240,11 +240,11 @@ func TestStableILTagMap(t *testing.T) {
 
 // Creates a list of random uint64 values and its serialization as a sequence of
 // ILInt values.
-func CreateSampleILTagArray(n int) ([]ILTag, []byte) {
-	l := make([]ILTag, n)
+func CreateSampleILTagArray(n int) ([]tags.ILTag, []byte) {
+	l := make([]tags.ILTag, n)
 	b := bytes.NewBuffer(nil)
 	for i := 0; i < n; i++ {
-		var t ILTag
+		var t tags.ILTag
 		switch i % 3 {
 		case 0:
 			r := NewStdBoolTag()
@@ -260,7 +260,7 @@ func CreateSampleILTagArray(n int) ([]ILTag, []byte) {
 			t = r
 		}
 		l[i] = t
-		if err := ILTagSeralize(t, b); err != nil {
+		if err := tags.ILTagSeralize(t, b); err != nil {
 			panic("Unable to serialize the ILTag")
 		}
 	}

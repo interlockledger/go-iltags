@@ -33,45 +33,30 @@
 package impl
 
 import (
-	. "github.com/interlockledger/go-iltags/tags"
+	"github.com/interlockledger/go-iltags/tags"
 )
-
-//------------------------------------------------------------------------------
-
-// Implementation of the raw tag.
-type RawTag struct {
-	ILTagHeaderImpl
-	RawPayload
-}
-
-// Create a new RawTag.
-func NewRawTag(id TagID) *RawTag {
-	var t RawTag
-	t.SetId(id)
-	return &t
-}
 
 //------------------------------------------------------------------------------
 
 // Implementation of the BytesTag. It is actually an alias to RawTag as both
 // share the same serialization.
-type BytesTag = RawTag
+type BytesTag = tags.RawTag
 
 // Create a new BytesTag.
-func NewBytesTag(id TagID) *BytesTag {
-	return NewRawTag(id)
+func NewBytesTag(id tags.TagID) *BytesTag {
+	return tags.NewRawTag(id)
 }
 
 //------------------------------------------------------------------------------
 
 // Implementation of the BigIntTag.
 type BigIntTag struct {
-	ILTagHeaderImpl
+	tags.ILTagHeaderImpl
 	BigIntPayload
 }
 
 // Create a new RawTag.
-func NewBigIntTag(id TagID) *BigIntTag {
+func NewBigIntTag(id tags.TagID) *BigIntTag {
 	var t BigIntTag
 	t.SetId(id)
 	return &t
@@ -81,12 +66,12 @@ func NewBigIntTag(id TagID) *BigIntTag {
 
 // Implementation of the BigDecTag.
 type BigDecTag struct {
-	ILTagHeaderImpl
+	tags.ILTagHeaderImpl
 	BigDecPayload
 }
 
 // Create a new BigDecTag.
-func NewBigDecTag(id TagID) *BigDecTag {
+func NewBigDecTag(id tags.TagID) *BigDecTag {
 	var t BigDecTag
 	t.SetId(id)
 	return &t
@@ -96,12 +81,12 @@ func NewBigDecTag(id TagID) *BigDecTag {
 
 // Implementation of the ILIntArrayTag.
 type ILIntArrayTag struct {
-	ILTagHeaderImpl
+	tags.ILTagHeaderImpl
 	ILIntArrayPayload
 }
 
 // Create a new ILIntArrayTag.
-func NewILIntArrayTag(id TagID) *ILIntArrayTag {
+func NewILIntArrayTag(id tags.TagID) *ILIntArrayTag {
 	var t ILIntArrayTag
 	t.SetId(id)
 	return &t
@@ -111,12 +96,12 @@ func NewILIntArrayTag(id TagID) *ILIntArrayTag {
 
 // Implementation of the ILTagArrayTag.
 type ILTagArrayTag struct {
-	ILTagHeaderImpl
+	tags.ILTagHeaderImpl
 	ILTagArrayPayload
 }
 
 // Create a new ILTagArrayTag.
-func NewILTagArrayTag(id TagID) *ILTagArrayTag {
+func NewILTagArrayTag(id tags.TagID) *ILTagArrayTag {
 	var t ILTagArrayTag
 	t.SetId(id)
 	return &t
@@ -126,12 +111,12 @@ func NewILTagArrayTag(id TagID) *ILTagArrayTag {
 
 // Implementation of the ILTagSequenceTag.
 type ILTagSequenceTag struct {
-	ILTagHeaderImpl
+	tags.ILTagHeaderImpl
 	ILTagSequencePayload
 }
 
 // Create a new ILTagSequenceTag.
-func NewILTagSequenceTag(id TagID) *ILTagSequenceTag {
+func NewILTagSequenceTag(id tags.TagID) *ILTagSequenceTag {
 	var t ILTagSequenceTag
 	t.SetId(id)
 	return &t
@@ -141,12 +126,12 @@ func NewILTagSequenceTag(id TagID) *ILTagSequenceTag {
 
 // Implementation of the RangeTag.
 type RangeTag struct {
-	ILTagHeaderImpl
+	tags.ILTagHeaderImpl
 	RangePayload
 }
 
 // Create a new RangeTag.
-func NewRangeTag(id TagID) *RangeTag {
+func NewRangeTag(id tags.TagID) *RangeTag {
 	var t RangeTag
 	t.SetId(id)
 	return &t
@@ -156,12 +141,12 @@ func NewRangeTag(id TagID) *RangeTag {
 
 // Implementation of the VersionTag.
 type VersionTag struct {
-	ILTagHeaderImpl
+	tags.ILTagHeaderImpl
 	VersionPayload
 }
 
 // Create a new VersionTag.
-func NewVersionTag(id TagID) *VersionTag {
+func NewVersionTag(id tags.TagID) *VersionTag {
 	var t VersionTag
 	t.SetId(id)
 	return &t
@@ -173,7 +158,7 @@ func NewVersionTag(id TagID) *VersionTag {
 type OIDTag = ILIntArrayTag
 
 // Create a new OIDTag.
-func NewOIDTag(id TagID) *OIDTag {
+func NewOIDTag(id tags.TagID) *OIDTag {
 	return NewILIntArrayTag(id)
 }
 
@@ -181,12 +166,12 @@ func NewOIDTag(id TagID) *OIDTag {
 
 // Implementation of the StringDictionaryTag.
 type StringDictionaryTag struct {
-	ILTagHeaderImpl
+	tags.ILTagHeaderImpl
 	StringDictionaryPayload
 }
 
 // Create a new StringDictionaryTag.
-func NewStringDictionaryTag(id TagID) *StringDictionaryTag {
+func NewStringDictionaryTag(id tags.TagID) *StringDictionaryTag {
 	var t StringDictionaryTag
 	t.SetId(id)
 	return &t
@@ -196,12 +181,12 @@ func NewStringDictionaryTag(id TagID) *StringDictionaryTag {
 
 // Implementation of the DictionaryTag.
 type DictionaryTag struct {
-	ILTagHeaderImpl
+	tags.ILTagHeaderImpl
 	DictionaryPayload
 }
 
 // Create a new ILTagDictionaryTag.
-func NewDictionaryTag(id TagID) *DictionaryTag {
+func NewDictionaryTag(id tags.TagID) *DictionaryTag {
 	var t DictionaryTag
 	t.SetId(id)
 	return &t

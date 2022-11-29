@@ -33,7 +33,7 @@
 package impl
 
 import (
-	. "github.com/interlockledger/go-iltags/tags"
+	"github.com/interlockledger/go-iltags/tags"
 	"github.com/interlockledger/go-iltags/utils"
 )
 
@@ -102,14 +102,14 @@ func (m *StableStringMap) Clear() {
 // This type is a specialization of the map that preserves the insertion order
 // of the keys.
 type StableILTagMap struct {
-	entries map[string]ILTag
+	entries map[string]tags.ILTag
 	keys    []string
 }
 
 // Puts a new value into this map
-func (m *StableILTagMap) Put(key string, value ILTag) {
+func (m *StableILTagMap) Put(key string, value tags.ILTag) {
 	if m.entries == nil {
-		m.entries = make(map[string]ILTag)
+		m.entries = make(map[string]tags.ILTag)
 		m.keys = make([]string, 0, 8)
 	}
 	_, ok := m.entries[key]
@@ -132,7 +132,7 @@ func (m *StableILTagMap) Keys() []string {
 
 // Returns the value associated with the given key and a flag that indicates if
 // the value is present or not, just like a standard map.
-func (m *StableILTagMap) Get(key string) (ILTag, bool) {
+func (m *StableILTagMap) Get(key string) (tags.ILTag, bool) {
 	s, ok := m.entries[key]
 	return s, ok
 }

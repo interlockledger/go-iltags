@@ -33,19 +33,19 @@
 package impl
 
 import (
-	. "github.com/interlockledger/go-iltags/tags"
+	"github.com/interlockledger/go-iltags/tags"
 )
 
 //------------------------------------------------------------------------------
 
 // Implementation of the null tag.
 type NullTag struct {
-	ILTagHeaderImpl
+	tags.ILTagHeaderImpl
 	NullPayload
 }
 
 // Create a new NullTag.
-func NewNullTag(id TagID) *NullTag {
+func NewNullTag(id tags.TagID) *NullTag {
 	var t NullTag
 	t.SetId(id)
 	return &t
@@ -55,12 +55,12 @@ func NewNullTag(id TagID) *NullTag {
 
 // Implementation of the bool tag.
 type BoolTag struct {
-	ILTagHeaderImpl
+	tags.ILTagHeaderImpl
 	BoolPayload
 }
 
 // Create a new BoolTag.
-func NewBoolTag(id TagID) *BoolTag {
+func NewBoolTag(id tags.TagID) *BoolTag {
 	var t BoolTag
 	t.SetId(id)
 	return &t
@@ -70,12 +70,12 @@ func NewBoolTag(id TagID) *BoolTag {
 
 // Implementation of the uint8 tag.
 type UInt8Tag struct {
-	ILTagHeaderImpl
+	tags.ILTagHeaderImpl
 	UInt8Payload
 }
 
 // Create a new UInt8Tag.
-func NewUInt8Tag(id TagID) *UInt8Tag {
+func NewUInt8Tag(id tags.TagID) *UInt8Tag {
 	var t UInt8Tag
 	t.SetId(id)
 	return &t
@@ -85,12 +85,12 @@ func NewUInt8Tag(id TagID) *UInt8Tag {
 
 // Implementation of the int8 tag.
 type Int8Tag struct {
-	ILTagHeaderImpl
+	tags.ILTagHeaderImpl
 	Int8Payload
 }
 
 // Create a new Int8Tag.
-func NewInt8Tag(id TagID) *Int8Tag {
+func NewInt8Tag(id tags.TagID) *Int8Tag {
 	var t Int8Tag
 	t.SetId(id)
 	return &t
@@ -100,12 +100,12 @@ func NewInt8Tag(id TagID) *Int8Tag {
 
 // Implementation of the uint16 tag.
 type UInt16Tag struct {
-	ILTagHeaderImpl
+	tags.ILTagHeaderImpl
 	UInt16Payload
 }
 
 // Create a new UInt16Tag.
-func NewUInt16Tag(id TagID) *UInt16Tag {
+func NewUInt16Tag(id tags.TagID) *UInt16Tag {
 	var t UInt16Tag
 	t.SetId(id)
 	return &t
@@ -115,12 +115,12 @@ func NewUInt16Tag(id TagID) *UInt16Tag {
 
 // Implementation of the int16 tag.
 type Int16Tag struct {
-	ILTagHeaderImpl
+	tags.ILTagHeaderImpl
 	Int16Payload
 }
 
 // Create a new Int16Tag.
-func NewInt16Tag(id TagID) *Int16Tag {
+func NewInt16Tag(id tags.TagID) *Int16Tag {
 	var t Int16Tag
 	t.SetId(id)
 	return &t
@@ -130,12 +130,12 @@ func NewInt16Tag(id TagID) *Int16Tag {
 
 // Implementation of the uint32 tag.
 type UInt32Tag struct {
-	ILTagHeaderImpl
+	tags.ILTagHeaderImpl
 	UInt32Payload
 }
 
 // Create a new UInt32Tag.
-func NewUInt32Tag(id TagID) *UInt32Tag {
+func NewUInt32Tag(id tags.TagID) *UInt32Tag {
 	var t UInt32Tag
 	t.SetId(id)
 	return &t
@@ -145,12 +145,12 @@ func NewUInt32Tag(id TagID) *UInt32Tag {
 
 // Implementation of the int32 tag.
 type Int32Tag struct {
-	ILTagHeaderImpl
+	tags.ILTagHeaderImpl
 	Int32Payload
 }
 
 // Create a new Int32Tag.
-func NewInt32Tag(id TagID) *Int32Tag {
+func NewInt32Tag(id tags.TagID) *Int32Tag {
 	var t Int32Tag
 	t.SetId(id)
 	return &t
@@ -160,12 +160,12 @@ func NewInt32Tag(id TagID) *Int32Tag {
 
 // Implementation of the uint64 tag.
 type UInt64Tag struct {
-	ILTagHeaderImpl
+	tags.ILTagHeaderImpl
 	UInt64Payload
 }
 
 // Create a new UInt64Tag.
-func NewUInt64Tag(id TagID) *UInt64Tag {
+func NewUInt64Tag(id tags.TagID) *UInt64Tag {
 	var t UInt64Tag
 	t.SetId(id)
 	return &t
@@ -175,12 +175,12 @@ func NewUInt64Tag(id TagID) *UInt64Tag {
 
 // Implementation of the int64 tag.
 type Int64Tag struct {
-	ILTagHeaderImpl
+	tags.ILTagHeaderImpl
 	Int64Payload
 }
 
 // Create a new Int64Tag.
-func NewInt64Tag(id TagID) *Int64Tag {
+func NewInt64Tag(id tags.TagID) *Int64Tag {
 	var t Int64Tag
 	t.SetId(id)
 	return &t
@@ -190,12 +190,12 @@ func NewInt64Tag(id TagID) *Int64Tag {
 
 // Implementation of the float32 tag.
 type Float32Tag struct {
-	ILTagHeaderImpl
+	tags.ILTagHeaderImpl
 	Float32Payload
 }
 
 // Create a new Float32Tag.
-func NewFloat32Tag(id TagID) *Float32Tag {
+func NewFloat32Tag(id tags.TagID) *Float32Tag {
 	var t Float32Tag
 	t.SetId(id)
 	return &t
@@ -205,12 +205,12 @@ func NewFloat32Tag(id TagID) *Float32Tag {
 
 // Implementation of the float64 tag.
 type Float64Tag struct {
-	ILTagHeaderImpl
+	tags.ILTagHeaderImpl
 	Float64Payload
 }
 
 // Create a new Float64Tag.
-func NewFloat64Tag(id TagID) *Float64Tag {
+func NewFloat64Tag(id tags.TagID) *Float64Tag {
 	var t Float64Tag
 	t.SetId(id)
 	return &t
@@ -220,12 +220,12 @@ func NewFloat64Tag(id TagID) *Float64Tag {
 
 // Implementation of the float64 tag.
 type Float128Tag struct {
-	ILTagHeaderImpl
+	tags.ILTagHeaderImpl
 	Float128Payload
 }
 
 // Create a new Float64Tag.
-func NewFloat128Tag(id TagID) *Float128Tag {
+func NewFloat128Tag(id tags.TagID) *Float128Tag {
 	var t Float128Tag
 	t.SetId(id)
 	return &t
@@ -235,12 +235,12 @@ func NewFloat128Tag(id TagID) *Float128Tag {
 
 // Implementation of the ILInt tag.
 type ILIntTag struct {
-	ILTagHeaderImpl
+	tags.ILTagHeaderImpl
 	ILIntPayload
 }
 
 // Create a new ILIntTag.
-func NewILIntTag(id TagID) *ILIntTag {
+func NewILIntTag(id tags.TagID) *ILIntTag {
 	var t ILIntTag
 	t.SetId(id)
 	return &t
@@ -250,12 +250,12 @@ func NewILIntTag(id TagID) *ILIntTag {
 
 // Implementation of the signed ILInt tag.
 type SignedILIntTag struct {
-	ILTagHeaderImpl
+	tags.ILTagHeaderImpl
 	SignedILIntPayload
 }
 
 // Create a new SignedILIntTag.
-func NewSignedILIntTag(id TagID) *SignedILIntTag {
+func NewSignedILIntTag(id tags.TagID) *SignedILIntTag {
 	var t SignedILIntTag
 	t.SetId(id)
 	return &t

@@ -30,12 +30,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package impl
+package tags
 
 import (
 	"testing"
 
-	. "github.com/interlockledger/go-iltags/tags"
 	"github.com/stretchr/testify/assert"
 )
 

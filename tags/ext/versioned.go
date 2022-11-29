@@ -38,7 +38,6 @@ import (
 
 	"github.com/interlockledger/go-iltags/serialization"
 	"github.com/interlockledger/go-iltags/tags"
-	"github.com/interlockledger/go-iltags/tags/impl"
 )
 
 /*
@@ -175,7 +174,7 @@ where MyVersionedPayload is a struct that implements the VersionedPayloadData
 inteface.
 */
 type VersionedPayloadTag[T VersionedPayloadData] struct {
-	impl.ILTagHeaderImpl
+	tags.ILTagHeaderImpl
 	VersionedPayload[T]
 }
 

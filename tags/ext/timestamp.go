@@ -149,7 +149,7 @@ Since it is not a standard tag it does not have a Standard tag ID associated
 with it.
 */
 type TimestapTZTag struct {
-	impl.ILTagHeaderImpl
+	tags.ILTagHeaderImpl
 	TimestampTZPayload
 }
 
