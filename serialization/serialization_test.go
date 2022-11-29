@@ -219,10 +219,10 @@ func TestReadBool(t *testing.T) {
 	assert.Nil(t, err)
 	assert.True(t, v)
 
-	v, err = ReadBool(bytes.NewReader([]byte{0x02}))
+	_, err = ReadBool(bytes.NewReader([]byte{0x02}))
 	assert.ErrorIs(t, err, ErrSerializationFormat)
 
-	v, err = ReadBool(bytes.NewReader([]byte{}))
+	_, err = ReadBool(bytes.NewReader([]byte{}))
 	assert.ErrorIs(t, err, io.EOF)
 }
 
@@ -232,7 +232,7 @@ func TestReadUInt8(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, uint8(0xFA), v)
 
-	v, err = ReadUInt8(bytes.NewReader([]byte{}))
+	_, err = ReadUInt8(bytes.NewReader([]byte{}))
 	assert.ErrorIs(t, err, io.EOF)
 }
 
@@ -242,7 +242,7 @@ func TestReadInt8(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, int8(-6), v)
 
-	v, err = ReadInt8(bytes.NewReader([]byte{}))
+	_, err = ReadInt8(bytes.NewReader([]byte{}))
 	assert.ErrorIs(t, err, io.EOF)
 }
 
@@ -252,10 +252,10 @@ func TestReadUInt16(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, uint16(0xFFFA), v)
 
-	v, err = ReadUInt16(bytes.NewReader([]byte{}))
+	_, err = ReadUInt16(bytes.NewReader([]byte{}))
 	assert.ErrorIs(t, err, io.EOF)
 
-	v, err = ReadUInt16(bytes.NewReader([]byte{0x00}))
+	_, err = ReadUInt16(bytes.NewReader([]byte{0x00}))
 	assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
 }
 
@@ -265,10 +265,10 @@ func TestReadInt16(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, int16(-6), v)
 
-	v, err = ReadInt16(bytes.NewReader([]byte{}))
+	_, err = ReadInt16(bytes.NewReader([]byte{}))
 	assert.ErrorIs(t, err, io.EOF)
 
-	v, err = ReadInt16(bytes.NewReader([]byte{0x00}))
+	_, err = ReadInt16(bytes.NewReader([]byte{0x00}))
 	assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
 }
 
@@ -278,10 +278,10 @@ func TestReadUInt32(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, uint32(0xFFFFFFFA), v)
 
-	v, err = ReadUInt32(bytes.NewReader([]byte{}))
+	_, err = ReadUInt32(bytes.NewReader([]byte{}))
 	assert.ErrorIs(t, err, io.EOF)
 
-	v, err = ReadUInt32(bytes.NewReader([]byte{0x00}))
+	_, err = ReadUInt32(bytes.NewReader([]byte{0x00}))
 	assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
 }
 
@@ -291,10 +291,10 @@ func TestReadInt32(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, int32(-6), v)
 
-	v, err = ReadInt32(bytes.NewReader([]byte{}))
+	_, err = ReadInt32(bytes.NewReader([]byte{}))
 	assert.ErrorIs(t, err, io.EOF)
 
-	v, err = ReadInt32(bytes.NewReader([]byte{0x00}))
+	_, err = ReadInt32(bytes.NewReader([]byte{0x00}))
 	assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
 }
 
@@ -304,10 +304,10 @@ func TestReadUInt64(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, uint64(0xFFFFFFFFFFFFFFFA), v)
 
-	v, err = ReadUInt64(bytes.NewReader([]byte{}))
+	_, err = ReadUInt64(bytes.NewReader([]byte{}))
 	assert.ErrorIs(t, err, io.EOF)
 
-	v, err = ReadUInt64(bytes.NewReader([]byte{0x00}))
+	_, err = ReadUInt64(bytes.NewReader([]byte{0x00}))
 	assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
 }
 
@@ -317,10 +317,10 @@ func TestReadInt64(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, int64(-6), v)
 
-	v, err = ReadInt64(bytes.NewReader([]byte{}))
+	_, err = ReadInt64(bytes.NewReader([]byte{}))
 	assert.ErrorIs(t, err, io.EOF)
 
-	v, err = ReadInt64(bytes.NewReader([]byte{0x00}))
+	_, err = ReadInt64(bytes.NewReader([]byte{0x00}))
 	assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
 }
 
@@ -330,10 +330,10 @@ func TestReadFloat32(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, float32(3.14159274101257324), v)
 
-	v, err = ReadFloat32(bytes.NewReader([]byte{}))
+	_, err = ReadFloat32(bytes.NewReader([]byte{}))
 	assert.ErrorIs(t, err, io.EOF)
 
-	v, err = ReadFloat32(bytes.NewReader([]byte{0x00}))
+	_, err = ReadFloat32(bytes.NewReader([]byte{0x00}))
 	assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
 }
 
@@ -343,10 +343,10 @@ func TestReadFloat64(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, float64(0.333333333333333314829616256247390992939472198486328125), v)
 
-	v, err = ReadFloat64(bytes.NewReader([]byte{}))
+	_, err = ReadFloat64(bytes.NewReader([]byte{}))
 	assert.ErrorIs(t, err, io.EOF)
 
-	v, err = ReadFloat64(bytes.NewReader([]byte{0x00}))
+	_, err = ReadFloat64(bytes.NewReader([]byte{0x00}))
 	assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
 }
 
@@ -356,13 +356,13 @@ func TestReadString(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "コーヒー", v)
 
-	v, err = ReadString(bytes.NewReader([]byte{}), 12)
+	_, err = ReadString(bytes.NewReader([]byte{}), 12)
 	assert.ErrorIs(t, err, io.EOF)
 
-	v, err = ReadString(bytes.NewReader([]byte{0xe3, 0x82, 0xb3, 0xe3, 0x83, 0xbc, 0xe3, 0x83, 0x92, 0xe3, 0x83}), 12)
+	_, err = ReadString(bytes.NewReader([]byte{0xe3, 0x82, 0xb3, 0xe3, 0x83, 0xbc, 0xe3, 0x83, 0x92, 0xe3, 0x83}), 12)
 	assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
 
-	v, err = ReadString(bytes.NewReader([]byte{0xe3, 0x82, 0xb3, 0xe3, 0x83, 0xbc, 0xe3, 0x83, 0x92, 0xe3, 0x83}), 11)
+	_, err = ReadString(bytes.NewReader([]byte{0xe3, 0x82, 0xb3, 0xe3, 0x83, 0xbc, 0xe3, 0x83, 0x92, 0xe3, 0x83}), 11)
 	assert.ErrorIs(t, err, ErrBadUTF8String)
 }
 
@@ -372,10 +372,10 @@ func TestReadILInt(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, uint64(1234567890), v)
 
-	v, err = ReadILInt(bytes.NewReader([]byte{}))
+	_, err = ReadILInt(bytes.NewReader([]byte{}))
 	assert.ErrorIs(t, err, io.EOF)
 
-	v, err = ReadILInt(bytes.NewReader([]byte{0xfb, 0x49, 0x96, 0x1}))
+	_, err = ReadILInt(bytes.NewReader([]byte{0xfb, 0x49, 0x96, 0x1}))
 	assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
 }
 
@@ -385,9 +385,9 @@ func TestReadSignedILInt(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, int64(-1234567890), v)
 
-	v, err = ReadSignedILInt(bytes.NewReader([]byte{}))
+	_, err = ReadSignedILInt(bytes.NewReader([]byte{}))
 	assert.ErrorIs(t, err, io.EOF)
 
-	v, err = ReadSignedILInt(bytes.NewReader([]byte{0xfb, 0x93, 0x2c, 0x4}))
+	_, err = ReadSignedILInt(bytes.NewReader([]byte{0xfb, 0x93, 0x2c, 0x4}))
 	assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
 }
