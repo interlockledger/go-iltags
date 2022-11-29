@@ -469,10 +469,9 @@ type StringDictionaryPayload struct {
 // Implementation of ILTagPayload.ValueSize().
 func (p *StringDictionaryPayload) ValueSize() uint64 {
 	size := uint64(ilint.EncodedSize(uint64(p.Map.Size())))
-	for _, k := range p.Map.Keys() {
-		size += StdStringTagSize(k)
-		v, _ := p.Map.Get(k)
-		size += StdStringTagSize(v)
+	for _, e := range p.Map.Entries() {
+		size += StdStringTagSize(e.Key)
+		size += StdStringTagSize(e.Value)
 	}
 	return size
 }
@@ -483,12 +482,11 @@ func (p *StringDictionaryPayload) SerializeValue(writer io.Writer) error {
 	if err := serialization.WriteILInt(writer, uint64(p.Map.Size())); err != nil {
 		return err
 	}
-	for _, k := range p.Map.Keys() {
-		if err := SerializeStdStringTag(k, writer); err != nil {
+	for _, e := range p.Map.Entries() {
+		if err := SerializeStdStringTag(e.Key, writer); err != nil {
 			return err
 		}
-		v, _ := p.Map.Get(k)
-		if err := SerializeStdStringTag(v, writer); err != nil {
+		if err := SerializeStdStringTag(e.Value, writer); err != nil {
 			return err
 		}
 	}
