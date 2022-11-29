@@ -30,27 +30,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package tags
+package serialization
 
-import "fmt"
-
-var (
-	// The tag is too large to be manipulated by this library.
-	ErrTagTooLarge = fmt.Errorf("the given tag is too large to be handled by this library")
-	// Unsupported/unknown tag id.
-	ErrUnsupportedTagId = fmt.Errorf("unsupported tag ID")
-	// Bad tag format
-	ErrBadTagFormat = fmt.Errorf("bad tag format")
-	// Unexpected tag id.
-	ErrUnexpectedTagId = fmt.Errorf("unexpected tag ID")
+import (
+	"fmt"
 )
 
-// Create a new UnsupportedTagIdError with the specified tag id.
-func NewErrUnsupportedTagId(id TagID) error {
-	return fmt.Errorf("unsupported tag with id %d: %w", id, ErrUnsupportedTagId)
-}
-
-// Create a new NewErrUnexpectedTagId with the specified tag id.
-func NewErrUnexpectedTagId(expected, id TagID) error {
-	return fmt.Errorf("expecting tag with id %d but got the id %d: %w", expected, id, ErrUnexpectedTagId)
-}
+var (
+	// This error happens when the serialized data format is invalid.
+	ErrSerializationFormat = fmt.Errorf("bad serialization format")
+	// This error happens when an UTF-8 string is invalid.
+	ErrBadUTF8String = fmt.Errorf("envalid UTF-8 string")
+)

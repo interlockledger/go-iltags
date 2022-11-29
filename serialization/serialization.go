@@ -34,19 +34,11 @@ package serialization
 
 import (
 	"encoding/binary"
-	"fmt"
 	"io"
 	"math"
 	"unicode/utf8"
 
 	"github.com/interlockledger/go-iltags/ilint"
-)
-
-var (
-	// This error happens when the serialized data format is invalid.
-	ErrSerializationFormat = fmt.Errorf("Bad serialization format.")
-	// This error happens when an UTF-8 string is invalid.
-	ErrBadUTF8String = fmt.Errorf("Invalid UTF-8 string.")
 )
 
 /*

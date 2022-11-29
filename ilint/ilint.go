@@ -33,20 +33,8 @@
 package ilint
 
 import (
-	"fmt"
 	"io"
 )
-
-/*
-This error is returned when the encoded ILInt is invalid.
-*/
-var ErrInvalidILInt = fmt.Errorf("Invalid ILInt.")
-
-/*
-This error is returned when the encoded ILInt is invalid due to an overflow in
-the 64 bit value.
-*/
-var ErrOverflow = fmt.Errorf("Overflow.")
 
 /*
 LInt base value. All values smaller than this value are encoded asa single byte.

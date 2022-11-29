@@ -30,27 +30,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package tags
+package ilint
 
-import "fmt"
-
-var (
-	// The tag is too large to be manipulated by this library.
-	ErrTagTooLarge = fmt.Errorf("the given tag is too large to be handled by this library")
-	// Unsupported/unknown tag id.
-	ErrUnsupportedTagId = fmt.Errorf("unsupported tag ID")
-	// Bad tag format
-	ErrBadTagFormat = fmt.Errorf("bad tag format")
-	// Unexpected tag id.
-	ErrUnexpectedTagId = fmt.Errorf("unexpected tag ID")
+import (
+	"fmt"
 )
 
-// Create a new UnsupportedTagIdError with the specified tag id.
-func NewErrUnsupportedTagId(id TagID) error {
-	return fmt.Errorf("unsupported tag with id %d: %w", id, ErrUnsupportedTagId)
-}
+var (
+	/*
+	   This error is returned when the encoded ILInt is invalid.
+	*/
+	ErrInvalidILInt = fmt.Errorf("invalid ILInt")
 
-// Create a new NewErrUnexpectedTagId with the specified tag id.
-func NewErrUnexpectedTagId(expected, id TagID) error {
-	return fmt.Errorf("expecting tag with id %d but got the id %d: %w", expected, id, ErrUnexpectedTagId)
-}
+	/*
+	   This error is returned when the encoded ILInt is invalid due to an overflow in
+	   the 64 bit value.
+	*/
+	ErrOverflow = fmt.Errorf("overflow")
+)

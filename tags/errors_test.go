@@ -42,12 +42,12 @@ func TestNewErrUnsupportedTagId(t *testing.T) {
 
 	err := NewErrUnsupportedTagId(123)
 	assert.ErrorIs(t, err, ErrUnsupportedTagId)
-	assert.ErrorContains(t, err, "Unsupported tag with id 123:")
+	assert.ErrorContains(t, err, "unsupported tag with id 123:")
 }
 
 func TestNewErrUnexpectedTagId(t *testing.T) {
 
 	err := NewErrUnexpectedTagId(123, 456)
 	assert.ErrorIs(t, err, ErrUnexpectedTagId)
-	assert.ErrorContains(t, err, "Expecting tag with id 123 but got the id 456:")
+	assert.ErrorContains(t, err, "expecting tag with id 123 but got the id 456:")
 }
