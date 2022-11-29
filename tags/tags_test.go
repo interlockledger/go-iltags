@@ -42,7 +42,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-//------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------
 type mockTag struct {
 	mock.Mock
 }
@@ -443,7 +443,7 @@ func TestILTagDeserializeInto(t *testing.T) {
 	f.On("CreateTag", IL_NULL_TAG_ID).Return(tag, nil)
 	err = ILTagDeserializeInto(f, r, tag)
 	assert.ErrorIs(t, err, ErrUnexpectedTagId)
-	assert.ErrorContains(t, err, "Expecting tag with id 1 but got the id 0")
+	assert.ErrorContains(t, err, "expecting tag with id 1 but got the id 0")
 
 	// Bad header
 	r = bytes.NewBuffer([]byte{})
@@ -510,4 +510,51 @@ func TestILTagFromBytes(t *testing.T) {
 	nt, err = ILTagFromBytes(f, nil)
 	assert.ErrorIs(t, err, ErrBadTagFormat)
 	assert.Nil(t, nt)
+}
+
+func TestILTagSeralizeWithNull(t *testing.T) {
+
+	// Serialize nil
+	w := bytes.NewBuffer(nil)
+	assert.Nil(t, ILTagSeralizeWithNull(nil, w))
+	assert.Equal(t, []byte{0}, w.Bytes())
+
+	// Serialize something
+	tag := NewRawTag(64)
+	w = bytes.NewBuffer(nil)
+	assert.Nil(t, ILTagSeralizeWithNull(tag, w))
+	assert.Equal(t, []byte{0x40, 0x0}, w.Bytes())
+}
+
+func TestILTagDeserializeIntoOrNull(t *testing.T) {
+	tag := NewRawTag(64)
+
+	// Deserialize nil
+	r := bytes.NewReader([]byte{0})
+	nullTag, err := ILTagDeserializeIntoOrNull(nil, r, tag)
+	assert.Nil(t, err)
+	assert.True(t, nullTag)
+
+	// Deserialize something else
+	r = bytes.NewReader([]byte{0x40, 0x1, 0x23})
+	nullTag, err = ILTagDeserializeIntoOrNull(nil, r, tag)
+	assert.Nil(t, err)
+	assert.False(t, nullTag)
+	assert.Equal(t, []byte{0x23}, tag.Payload)
+
+	// Errors
+	r = bytes.NewReader([]byte{})
+	nullTag, err = ILTagDeserializeIntoOrNull(nil, r, tag)
+	assert.ErrorIs(t, err, io.EOF)
+	assert.False(t, nullTag)
+
+	r = bytes.NewReader([]byte{0x41, 0x1, 0x23})
+	nullTag, err = ILTagDeserializeIntoOrNull(nil, r, tag)
+	assert.ErrorIs(t, err, ErrUnexpectedTagId)
+	assert.False(t, nullTag)
+
+	r = bytes.NewReader([]byte{0x40, 0x1})
+	nullTag, err = ILTagDeserializeIntoOrNull(nil, r, tag)
+	assert.ErrorIs(t, err, io.EOF)
+	assert.False(t, nullTag)
 }

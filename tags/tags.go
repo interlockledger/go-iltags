@@ -256,3 +256,51 @@ func ILTagFromBytes(factory ILTagFactory, b []byte) (ILTag, error) {
 		return nil, ErrBadTagFormat
 	}
 }
+
+/*
+This is a helper function that serialized the given tag into the writer or add a
+ILNullTag is tag is nil.
+
+Since 2022.11.28.
+*/
+func ILTagSeralizeWithNull(tag ILTag, writer io.Writer) error {
+	if tag == nil {
+		_, err := writer.Write([]byte{0})
+		return err
+	} else {
+		return ILTagSeralize(tag, writer)
+	}
+}
+
+/*
+This helper function reads the next tag in the stream and deserialize it into
+the provided tag implementation unless an ILNullTag is found.
+
+If the tag read matches the implementation of the provided tag, it will be
+loaded into it and this function will return (false, nil). If the tag read is
+an ILNullTag, it will left tag unmodified and return (true, nil). If the tag
+read is neither an instance of the provided tag nor an ILNullTag, this function
+will return (_, ErrUnexpectedTagId).
+
+It will also return an error describing the issue if the tag could not be read.
+
+Since 2022.11.28.
+*/
+func ILTagDeserializeIntoOrNull(factory ILTagFactory, reader io.Reader,
+	tag ILTag) (bool, error) {
+	tagId, size, err := readTagHeader(reader)
+	if err != nil {
+		return false, err
+	}
+	if tagId == IL_NULL_TAG_ID {
+		return true, nil
+	}
+	if tagId != tag.Id() {
+		return false, NewErrUnexpectedTagId(tagId, tag.Id())
+	}
+	if err = readTagPayload(factory, reader, size, tag); err != nil {
+		return false, err
+	} else {
+		return false, nil
+	}
+}
