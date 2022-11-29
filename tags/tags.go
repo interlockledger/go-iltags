@@ -184,7 +184,7 @@ func readTagPayload(factory ILTagFactory, reader io.Reader, size uint64, tag ILT
 		return tag.DeserializeValue(factory, -1, reader)
 	} else if size > MAX_TAG_SIZE {
 		return ErrTagTooLarge
-	} else if size >= 0 {
+	} else {
 		r := io.LimitedReader{R: reader, N: int64(size)}
 		err := tag.DeserializeValue(factory, int(size), &r)
 		if err != nil {
