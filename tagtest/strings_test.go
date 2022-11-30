@@ -33,47 +33,41 @@
 package tagtest
 
 import (
-	"math/rand"
-	"strings"
-	"unicode"
+	"testing"
+	"unicode/utf8"
+
+	"github.com/stretchr/testify/assert"
 )
 
-/*
-Generates a random unicode string. It generates strings with 1 to 32 characteres
-in length.
-*/
-func GenerateRandomString() string {
-	return GenerateRandomStringWithLen(rand.Int()&0x1F + 1)
-}
+func TestGenerateRandomString(t *testing.T) {
 
-// Generates a random unicode string with n characters. Only graphical
-// codepoints are used. It will return "" if n is 0 or less than 0.
-func GenerateRandomStringWithLen(n int) string {
-	if n <= 0 {
-		return ""
-	}
-	b := strings.Builder{}
-	for i := 0; i < n; i++ {
-		r := rune(rand.Int() & 0x1FFFFF)
-		for !unicode.IsGraphic(r) {
-			r = rune(rand.Int() & 0x1FFFFF)
-		}
-		b.WriteRune(r)
-	}
-	return b.String()
-}
-
-// Creates a list of unique random strings.
-func CreateUniqueStringArray(n int) []string {
-
-	l := make([]string, n)
-	dl := make(map[string]bool, n)
-	for i := 0; i < n; i++ {
+	for i := 0; i < 128; i++ {
 		s := GenerateRandomString()
-		if _, ok := dl[s]; !ok {
-			dl[s] = true
-			l[i] = s
+		assert.Greater(t, utf8.RuneCountInString(s), 0)
+		assert.Less(t, utf8.RuneCountInString(s), 33)
+	}
+}
+
+func TestGenerateRandomStringWithLen(t *testing.T) {
+
+	for i := 0; i < 128; i++ {
+		s := GenerateRandomStringWithLen(i)
+		assert.Equal(t, i, utf8.RuneCountInString(s))
+	}
+}
+
+func TestCreateUniqueStringArray(t *testing.T) {
+
+	for i := 0; i < 128; i++ {
+		l := CreateUniqueStringArray(i)
+		assert.Len(t, l, i)
+		used := make(map[string]bool)
+		for _, s := range l {
+			assert.Greater(t, utf8.RuneCountInString(s), 0)
+			assert.Less(t, utf8.RuneCountInString(s), 33)
+			_, found := used[s]
+			assert.False(t, found)
+			used[s] = true
 		}
 	}
-	return l
 }
