@@ -41,109 +41,6 @@ import (
 	"github.com/interlockledger/go-iltags/tags"
 )
 
-/*
-Computes the size of an explicit tag with a small payload size.
-
-The result of this function is meaningless if the value size exceeds 0xF7.
-*/
-func getSmallValueExplicitTagSize(tagId tags.TagID, valueSize int) uint64 {
-	return uint64(ilint.EncodedSize(tagId.UInt64()) + 1 + valueSize)
-}
-
-/*
-Returns the size of an explicit Int8Tag.
-*/
-func ExplicitInt8TagSize(tagId tags.TagID) uint64 {
-	return getSmallValueExplicitTagSize(tagId, 1)
-}
-
-/*
-Returns the size of an explicit Int16Tag.
-*/
-func ExplicitInt16TagSize(tagId tags.TagID) uint64 {
-	return getSmallValueExplicitTagSize(tagId, 2)
-}
-
-/*
-Returns the size of an explicit Int32Tag.
-*/
-func ExplicitInt32TagSize(tagId tags.TagID) uint64 {
-	return getSmallValueExplicitTagSize(tagId, 4)
-}
-
-/*
-Returns the size of an explicit Int64Tag.
-*/
-func ExplicitInt64TagSize(tagId tags.TagID) uint64 {
-	return getSmallValueExplicitTagSize(tagId, 8)
-}
-
-/*
-Returns the size of an explicit Float128Tag.
-*/
-func ExplicitFloat128TagSize(tagId tags.TagID) uint64 {
-	return getSmallValueExplicitTagSize(tagId, 16)
-}
-
-/*
-Returns the size of a standard ILIntTag .
-*/
-func StdILIntTagSize(value uint64) uint64 {
-	return 1 + uint64(ilint.EncodedSize(value))
-}
-
-/*
-Returns the size of an explicit ILIntTag .
-*/
-func ExplicitILIntTagSize(tagId tags.TagID, value uint64) uint64 {
-	return getSmallValueExplicitTagSize(tagId, ilint.EncodedSize(value))
-}
-
-/*
-Returns the size of a standard SignedILIntTag .
-*/
-func StdSignedILIntTagSize(value int64) uint64 {
-	return 1 + uint64(ilint.SignedEncodedSize(value))
-}
-
-/*
-Returns the size of an explicit SignedILIntTag .
-*/
-func ExplicitSignedILIntTagSize(tagId tags.TagID, value int64) uint64 {
-	return getSmallValueExplicitTagSize(tagId, ilint.SignedEncodedSize(value))
-}
-
-var (
-	/*
-		Returns the size of an explicit Bool8Tag.
-	*/
-	ExplicitBoolTagSize = ExplicitInt8TagSize
-	/*
-		Returns the size of an explicit UInt8Tag.
-	*/
-	ExplicitUInt8TagSize = ExplicitInt8TagSize
-	/*
-		Returns the size of an explicit UInt16Tag.
-	*/
-	ExplicitUInt16TagSize = ExplicitInt16TagSize
-	/*
-		Returns the size of an explicit UInt32Tag.
-	*/
-	ExplicitUInt32TagSize = ExplicitInt32TagSize
-	/*
-		Returns the size of an explicit UInt64Tag.
-	*/
-	ExplicitUInt64TagSize = ExplicitInt64TagSize
-	/*
-		Returns the size of an explicit Float32Tag.
-	*/
-	ExplicitFloat32TagSize = ExplicitInt32TagSize
-	/*
-		Returns the size of an explicit Float64Tag.
-	*/
-	ExplicitFloat64TagSize = ExplicitInt64TagSize
-)
-
 func serializeTagId(tagId tags.TagID, writer io.Writer) error {
 	return serialization.WriteILInt(writer, tagId.UInt64())
 }
@@ -338,4 +235,30 @@ be an explicit tag id or this function will fail.
 */
 func SerializeInt64Tag(tagId tags.TagID, v int64, writer io.Writer) error {
 	return SerializeUInt64Tag(tagId, uint64(v), writer)
+}
+
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+
+/*
+Serializes a standard ILIntTag directly into a writer.
+*/
+func SerializeStandardILIntTag(v uint64, writer io.Writer) error {
+	if err := serializeTagId(tags.IL_ILINT_TAG_ID, writer); err != nil {
+		return err
+	}
+	_, err := ilint.EncodeToWriter(v, writer)
+	return err
+}
+
+/*
+Serializes a standard ILIntTag directly into a writer.
+*/
+func SerializeStandardSignedILIntTag(v int64, writer io.Writer) error {
+	if err := serializeTagId(tags.IL_SIGNED_ILINT_TAG_ID, writer); err != nil {
+		return err
+	}
+	_, err := ilint.EncodeSignedToWriter(v, writer)
+	return err
 }
