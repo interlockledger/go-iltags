@@ -30,70 +30,77 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package impl
+package tagtest
 
 import (
-	"bytes"
-	"fmt"
-	"math/rand"
+	"testing"
 
-	"github.com/interlockledger/go-iltags/serialization"
-	"github.com/interlockledger/go-iltags/tags"
-	"github.com/interlockledger/go-iltags/tagtest"
+	"github.com/stretchr/testify/assert"
 )
 
-// Creates a list of random uint64 values and its serialization as a sequence of
-// ILInt values.
-func CreateSampleILTagArray(n int) ([]tags.ILTag, []byte) {
-	l := make([]tags.ILTag, n)
-	b := bytes.NewBuffer(nil)
-	for i := 0; i < n; i++ {
-		var t tags.ILTag
-		switch i % 3 {
-		case 0:
-			r := NewStdBoolTag()
-			r.Payload = rand.Int()&0x1 == 0
-			t = r
-		case 1:
-			r := NewStdFloat32Tag()
-			r.Payload = rand.Float32()
-			t = r
-		case 2:
-			r := NewStdStringTag()
-			r.Payload = fmt.Sprintf("%d", rand.Uint64())
-			t = r
-		}
-		l[i] = t
-		if err := tags.ILTagSeralize(t, b); err != nil {
-			panic("Unable to serialize the ILTag")
-		}
+func TestAssertStructEmbeds(t *testing.T) {
+	type A struct {
+		a int
 	}
-	return l, b.Bytes()
-}
-
-// Creates a list of random tags and its serialization.
-func CreateSampleILInt64Array(n int) ([]uint64, []byte) {
-	l := make([]uint64, n)
-	b := bytes.NewBuffer(nil)
-	for i := 0; i < n; i++ {
-		l[i] = rand.Uint64()
-		if err := serialization.WriteILInt(b, l[i]); err != nil {
-			panic("Unable to serialize the ILInt")
-		}
+	type B struct {
+		b int
 	}
-	return l, b.Bytes()
-}
-
-// Creates a list of unique random strings and its serialization as a sequence
-// of standard string tags.
-func CreateSampleStringArray(n int) ([]string, []byte) {
-
-	b := bytes.NewBuffer(nil)
-	l := tagtest.CreateUniqueStringArray(n)
-	for _, s := range l {
-		if SerializeStdStringTag(s, b) != nil {
-			panic("Unable to serialize the String")
-		}
+	type C struct {
+		A
 	}
-	return l, b.Bytes()
+	type D struct {
+		B
+	}
+	type E struct {
+		A
+		B
+	}
+	type F struct {
+		C
+	}
+
+	var a A
+	a.a = 1
+	var b B
+	b.b = 1
+	var c C
+	var d D
+	var e E
+	var f F
+
+	assert.False(t, StructEmbeds(a, a))
+	assert.False(t, StructEmbeds(a, b))
+	assert.False(t, StructEmbeds(a, c))
+	assert.False(t, StructEmbeds(a, d))
+	assert.False(t, StructEmbeds(a, e))
+
+	assert.False(t, StructEmbeds(b, a))
+	assert.False(t, StructEmbeds(b, b))
+	assert.False(t, StructEmbeds(b, c))
+	assert.False(t, StructEmbeds(b, d))
+	assert.False(t, StructEmbeds(b, e))
+
+	assert.True(t, StructEmbeds(c, a))
+	assert.False(t, StructEmbeds(c, b))
+	assert.False(t, StructEmbeds(c, c))
+	assert.False(t, StructEmbeds(c, d))
+	assert.False(t, StructEmbeds(c, e))
+
+	assert.False(t, StructEmbeds(d, a))
+	assert.True(t, StructEmbeds(d, b))
+	assert.False(t, StructEmbeds(d, c))
+	assert.False(t, StructEmbeds(d, d))
+	assert.False(t, StructEmbeds(c, e))
+
+	assert.True(t, StructEmbeds(e, a))
+	assert.True(t, StructEmbeds(e, b))
+	assert.False(t, StructEmbeds(e, c))
+	assert.False(t, StructEmbeds(e, d))
+	assert.False(t, StructEmbeds(c, e))
+
+	assert.False(t, StructEmbeds(f, a))
+	assert.False(t, StructEmbeds(f, b))
+	assert.True(t, StructEmbeds(f, c))
+	assert.False(t, StructEmbeds(f, d))
+	assert.False(t, StructEmbeds(f, e))
 }

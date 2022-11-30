@@ -30,70 +30,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package impl
+package tagtest
 
-import (
-	"bytes"
-	"fmt"
-	"math/rand"
-
-	"github.com/interlockledger/go-iltags/serialization"
-	"github.com/interlockledger/go-iltags/tags"
-	"github.com/interlockledger/go-iltags/tagtest"
-)
-
-// Creates a list of random uint64 values and its serialization as a sequence of
-// ILInt values.
-func CreateSampleILTagArray(n int) ([]tags.ILTag, []byte) {
-	l := make([]tags.ILTag, n)
-	b := bytes.NewBuffer(nil)
-	for i := 0; i < n; i++ {
-		var t tags.ILTag
-		switch i % 3 {
-		case 0:
-			r := NewStdBoolTag()
-			r.Payload = rand.Int()&0x1 == 0
-			t = r
-		case 1:
-			r := NewStdFloat32Tag()
-			r.Payload = rand.Float32()
-			t = r
-		case 2:
-			r := NewStdStringTag()
-			r.Payload = fmt.Sprintf("%d", rand.Uint64())
-			t = r
-		}
-		l[i] = t
-		if err := tags.ILTagSeralize(t, b); err != nil {
-			panic("Unable to serialize the ILTag")
-		}
+/*
+Fills the given byte array with a sequence of numbers start with 0. It always
+returns the same instance passed to it.
+*/
+func FillSeq(buff []byte) []byte {
+	for i := 0; i < len(buff); i++ {
+		buff[i] = byte(i)
 	}
-	return l, b.Bytes()
-}
-
-// Creates a list of random tags and its serialization.
-func CreateSampleILInt64Array(n int) ([]uint64, []byte) {
-	l := make([]uint64, n)
-	b := bytes.NewBuffer(nil)
-	for i := 0; i < n; i++ {
-		l[i] = rand.Uint64()
-		if err := serialization.WriteILInt(b, l[i]); err != nil {
-			panic("Unable to serialize the ILInt")
-		}
-	}
-	return l, b.Bytes()
-}
-
-// Creates a list of unique random strings and its serialization as a sequence
-// of standard string tags.
-func CreateSampleStringArray(n int) ([]string, []byte) {
-
-	b := bytes.NewBuffer(nil)
-	l := tagtest.CreateUniqueStringArray(n)
-	for _, s := range l {
-		if SerializeStdStringTag(s, b) != nil {
-			panic("Unable to serialize the String")
-		}
-	}
-	return l, b.Bytes()
+	return buff
 }

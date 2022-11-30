@@ -36,6 +36,7 @@ import (
 	"testing"
 
 	"github.com/interlockledger/go-iltags/tags"
+	"github.com/interlockledger/go-iltags/tagtest"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -44,8 +45,8 @@ func TestNullTag(t *testing.T) {
 	var _ tags.ILTag = (*NullTag)(nil)
 
 	var tag NullTag
-	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
-	assert.True(t, AssertStructEmbeds(tag, NullPayload{}))
+	assert.True(t, tagtest.StructEmbeds(tag, tags.ILTagHeaderImpl{}))
+	assert.True(t, tagtest.StructEmbeds(tag, NullPayload{}))
 }
 
 func TestNewNullTag(t *testing.T) {
@@ -59,8 +60,8 @@ func TestBoolTag(t *testing.T) {
 	var _ tags.ILTag = (*BoolTag)(nil)
 
 	var tag BoolTag
-	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
-	assert.True(t, AssertStructEmbeds(tag, BoolPayload{}))
+	assert.True(t, tagtest.StructEmbeds(tag, tags.ILTagHeaderImpl{}))
+	assert.True(t, tagtest.StructEmbeds(tag, BoolPayload{}))
 }
 
 func TestNewBoolTag(t *testing.T) {
@@ -74,8 +75,8 @@ func TestUInt8Tag(t *testing.T) {
 	var _ tags.ILTag = (*UInt8Tag)(nil)
 
 	var tag UInt8Tag
-	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
-	assert.True(t, AssertStructEmbeds(tag, UInt8Payload{}))
+	assert.True(t, tagtest.StructEmbeds(tag, tags.ILTagHeaderImpl{}))
+	assert.True(t, tagtest.StructEmbeds(tag, UInt8Payload{}))
 }
 
 func TestNewUInt8Tag(t *testing.T) {
@@ -89,8 +90,8 @@ func TestInt8Tag(t *testing.T) {
 	var _ tags.ILTag = (*Int8Tag)(nil)
 
 	var tag Int8Tag
-	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
-	assert.True(t, AssertStructEmbeds(tag, Int8Payload{}))
+	assert.True(t, tagtest.StructEmbeds(tag, tags.ILTagHeaderImpl{}))
+	assert.True(t, tagtest.StructEmbeds(tag, Int8Payload{}))
 }
 
 func TestNewInt8Tag(t *testing.T) {
@@ -104,8 +105,8 @@ func TestUInt16Tag(t *testing.T) {
 	var _ tags.ILTag = (*UInt16Tag)(nil)
 
 	var tag UInt16Tag
-	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
-	assert.True(t, AssertStructEmbeds(tag, UInt16Payload{}))
+	assert.True(t, tagtest.StructEmbeds(tag, tags.ILTagHeaderImpl{}))
+	assert.True(t, tagtest.StructEmbeds(tag, UInt16Payload{}))
 }
 
 func TestNewUInt16Tag(t *testing.T) {
@@ -119,8 +120,8 @@ func TestInt16Tag(t *testing.T) {
 	var _ tags.ILTag = (*Int16Tag)(nil)
 
 	var tag Int16Tag
-	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
-	assert.True(t, AssertStructEmbeds(tag, Int16Payload{}))
+	assert.True(t, tagtest.StructEmbeds(tag, tags.ILTagHeaderImpl{}))
+	assert.True(t, tagtest.StructEmbeds(tag, Int16Payload{}))
 }
 
 func TestNewInt16Tag(t *testing.T) {
@@ -134,8 +135,8 @@ func TestUInt32Tag(t *testing.T) {
 	var _ tags.ILTag = (*UInt32Tag)(nil)
 
 	var tag UInt32Tag
-	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
-	assert.True(t, AssertStructEmbeds(tag, UInt32Payload{}))
+	assert.True(t, tagtest.StructEmbeds(tag, tags.ILTagHeaderImpl{}))
+	assert.True(t, tagtest.StructEmbeds(tag, UInt32Payload{}))
 }
 
 func TestNewUInt32Tag(t *testing.T) {
@@ -149,8 +150,8 @@ func TestInt32Tag(t *testing.T) {
 	var _ tags.ILTag = (*Int32Tag)(nil)
 
 	var tag Int32Tag
-	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
-	assert.True(t, AssertStructEmbeds(tag, Int32Payload{}))
+	assert.True(t, tagtest.StructEmbeds(tag, tags.ILTagHeaderImpl{}))
+	assert.True(t, tagtest.StructEmbeds(tag, Int32Payload{}))
 }
 
 func TestNewInt32Tag(t *testing.T) {
@@ -164,8 +165,8 @@ func TestUInt64Tag(t *testing.T) {
 	var _ tags.ILTag = (*UInt64Tag)(nil)
 
 	var tag UInt64Tag
-	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
-	assert.True(t, AssertStructEmbeds(tag, UInt64Payload{}))
+	assert.True(t, tagtest.StructEmbeds(tag, tags.ILTagHeaderImpl{}))
+	assert.True(t, tagtest.StructEmbeds(tag, UInt64Payload{}))
 }
 
 func TestNewUInt64Tag(t *testing.T) {
@@ -179,8 +180,8 @@ func TestInt64Tag(t *testing.T) {
 	var _ tags.ILTag = (*Int64Tag)(nil)
 
 	var tag Int64Tag
-	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
-	assert.True(t, AssertStructEmbeds(tag, Int64Payload{}))
+	assert.True(t, tagtest.StructEmbeds(tag, tags.ILTagHeaderImpl{}))
+	assert.True(t, tagtest.StructEmbeds(tag, Int64Payload{}))
 }
 
 func TestNewInt64Tag(t *testing.T) {
@@ -194,8 +195,8 @@ func TestFloat32Tag(t *testing.T) {
 	var _ tags.ILTag = (*Float32Tag)(nil)
 
 	var tag Float32Tag
-	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
-	assert.True(t, AssertStructEmbeds(tag, Float32Payload{}))
+	assert.True(t, tagtest.StructEmbeds(tag, tags.ILTagHeaderImpl{}))
+	assert.True(t, tagtest.StructEmbeds(tag, Float32Payload{}))
 }
 
 func TestNewFloat32Tag(t *testing.T) {
@@ -209,8 +210,8 @@ func TestFloat64Tag(t *testing.T) {
 	var _ tags.ILTag = (*Float64Tag)(nil)
 
 	var tag Float64Tag
-	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
-	assert.True(t, AssertStructEmbeds(tag, Float64Payload{}))
+	assert.True(t, tagtest.StructEmbeds(tag, tags.ILTagHeaderImpl{}))
+	assert.True(t, tagtest.StructEmbeds(tag, Float64Payload{}))
 }
 
 func TestNewFloat64Tag(t *testing.T) {
@@ -224,8 +225,8 @@ func TestFloat128Tag(t *testing.T) {
 	var _ tags.ILTag = (*Float128Tag)(nil)
 
 	var tag Float128Tag
-	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
-	assert.True(t, AssertStructEmbeds(tag, Float128Payload{}))
+	assert.True(t, tagtest.StructEmbeds(tag, tags.ILTagHeaderImpl{}))
+	assert.True(t, tagtest.StructEmbeds(tag, Float128Payload{}))
 }
 
 func TestNewFloat128Tag(t *testing.T) {
@@ -239,8 +240,8 @@ func TestILIntTag(t *testing.T) {
 	var _ tags.ILTag = (*ILIntTag)(nil)
 
 	var tag ILIntTag
-	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
-	assert.True(t, AssertStructEmbeds(tag, ILIntPayload{}))
+	assert.True(t, tagtest.StructEmbeds(tag, tags.ILTagHeaderImpl{}))
+	assert.True(t, tagtest.StructEmbeds(tag, ILIntPayload{}))
 }
 
 func TestNewILIntTag(t *testing.T) {
@@ -254,8 +255,8 @@ func TestSignedILIntTag(t *testing.T) {
 	var _ tags.ILTag = (*SignedILIntTag)(nil)
 
 	var tag SignedILIntTag
-	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
-	assert.True(t, AssertStructEmbeds(tag, SignedILIntPayload{}))
+	assert.True(t, tagtest.StructEmbeds(tag, tags.ILTagHeaderImpl{}))
+	assert.True(t, tagtest.StructEmbeds(tag, SignedILIntPayload{}))
 }
 
 func TestNewSignedILIntTag(t *testing.T) {

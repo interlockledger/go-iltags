@@ -36,6 +36,7 @@ import (
 	"testing"
 
 	"github.com/interlockledger/go-iltags/tags"
+	"github.com/interlockledger/go-iltags/tagtest"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -56,8 +57,8 @@ func TestBigIntTag(t *testing.T) {
 	var _ tags.ILTag = (*BigIntTag)(nil)
 
 	var tag BigIntTag
-	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
-	assert.True(t, AssertStructEmbeds(tag, BigIntPayload{}))
+	assert.True(t, tagtest.StructEmbeds(tag, tags.ILTagHeaderImpl{}))
+	assert.True(t, tagtest.StructEmbeds(tag, BigIntPayload{}))
 }
 
 func TestNewBigIntTag(t *testing.T) {
@@ -71,8 +72,8 @@ func TestBigDecTag(t *testing.T) {
 	var _ tags.ILTag = (*BigDecTag)(nil)
 
 	var tag BigDecTag
-	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
-	assert.True(t, AssertStructEmbeds(tag, BigDecPayload{}))
+	assert.True(t, tagtest.StructEmbeds(tag, tags.ILTagHeaderImpl{}))
+	assert.True(t, tagtest.StructEmbeds(tag, BigDecPayload{}))
 }
 
 func TestNewBigDecTag(t *testing.T) {
@@ -86,8 +87,8 @@ func TestILIntArrayTag(t *testing.T) {
 	var _ tags.ILTag = (*ILIntArrayTag)(nil)
 
 	var tag ILIntArrayTag
-	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
-	assert.True(t, AssertStructEmbeds(tag, ILIntArrayPayload{}))
+	assert.True(t, tagtest.StructEmbeds(tag, tags.ILTagHeaderImpl{}))
+	assert.True(t, tagtest.StructEmbeds(tag, ILIntArrayPayload{}))
 }
 
 func TestNewILIntArrayTag(t *testing.T) {
@@ -101,8 +102,8 @@ func TestILTagArrayTag(t *testing.T) {
 	var _ tags.ILTag = (*ILTagArrayTag)(nil)
 
 	var tag ILTagArrayTag
-	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
-	assert.True(t, AssertStructEmbeds(tag, ILTagArrayPayload{}))
+	assert.True(t, tagtest.StructEmbeds(tag, tags.ILTagHeaderImpl{}))
+	assert.True(t, tagtest.StructEmbeds(tag, ILTagArrayPayload{}))
 }
 
 func TestNewILTagArrayTag(t *testing.T) {
@@ -116,8 +117,8 @@ func TestILTagSequenceTag(t *testing.T) {
 	var _ tags.ILTag = (*ILTagSequenceTag)(nil)
 
 	var tag ILTagSequenceTag
-	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
-	assert.True(t, AssertStructEmbeds(tag, ILTagSequencePayload{}))
+	assert.True(t, tagtest.StructEmbeds(tag, tags.ILTagHeaderImpl{}))
+	assert.True(t, tagtest.StructEmbeds(tag, ILTagSequencePayload{}))
 }
 
 func TestNewILTagSequenceTag(t *testing.T) {
@@ -131,8 +132,8 @@ func TestRangeTag(t *testing.T) {
 	var _ tags.ILTag = (*RangeTag)(nil)
 
 	var tag RangeTag
-	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
-	assert.True(t, AssertStructEmbeds(tag, RangePayload{}))
+	assert.True(t, tagtest.StructEmbeds(tag, tags.ILTagHeaderImpl{}))
+	assert.True(t, tagtest.StructEmbeds(tag, RangePayload{}))
 }
 
 func TestNewRangeTag(t *testing.T) {
@@ -146,8 +147,8 @@ func TestVersionTag(t *testing.T) {
 	var _ tags.ILTag = (*VersionTag)(nil)
 
 	var tag VersionTag
-	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
-	assert.True(t, AssertStructEmbeds(tag, VersionPayload{}))
+	assert.True(t, tagtest.StructEmbeds(tag, tags.ILTagHeaderImpl{}))
+	assert.True(t, tagtest.StructEmbeds(tag, VersionPayload{}))
 }
 
 func TestNewVersionTag(t *testing.T) {
@@ -173,8 +174,8 @@ func TestStringDictionaryTag(t *testing.T) {
 	var _ tags.ILTag = (*StringDictionaryTag)(nil)
 
 	var tag StringDictionaryTag
-	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
-	assert.True(t, AssertStructEmbeds(tag, StringDictionaryPayload{}))
+	assert.True(t, tagtest.StructEmbeds(tag, tags.ILTagHeaderImpl{}))
+	assert.True(t, tagtest.StructEmbeds(tag, StringDictionaryPayload{}))
 }
 
 func TestNewStringDictionaryTag(t *testing.T) {
@@ -188,8 +189,8 @@ func TestDictionaryTag(t *testing.T) {
 	var _ tags.ILTag = (*DictionaryTag)(nil)
 
 	var tag DictionaryTag
-	assert.True(t, AssertStructEmbeds(tag, tags.ILTagHeaderImpl{}))
-	assert.True(t, AssertStructEmbeds(tag, DictionaryPayload{}))
+	assert.True(t, tagtest.StructEmbeds(tag, tags.ILTagHeaderImpl{}))
+	assert.True(t, tagtest.StructEmbeds(tag, DictionaryPayload{}))
 }
 
 func TestNewDictionaryTag(t *testing.T) {

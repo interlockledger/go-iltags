@@ -34,31 +34,15 @@ package impl
 
 import (
 	"bytes"
-	"io"
 	"testing"
 
 	"github.com/interlockledger/go-iltags/ilint"
 	"github.com/interlockledger/go-iltags/serialization"
 	"github.com/interlockledger/go-iltags/tags"
+	"github.com/interlockledger/go-iltags/tagtest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-type limitedDummyWriter struct {
-	N int64
-}
-
-func (w *limitedDummyWriter) Write(b []byte) (int, error) {
-	if w.N == 0 {
-		return 0, io.EOF
-	}
-	n := int64(len(b))
-	if n > w.N {
-		n = w.N
-	}
-	w.N -= n
-	return int(n), nil
-}
 
 func TestStringPayload(t *testing.T) {
 	var _ tags.ILTagPayload = (*StringPayload)(nil)
@@ -184,7 +168,7 @@ func TestBigDecPayload(t *testing.T) {
 	assert.Nil(t, tag.SerializeValue(w))
 	assert.Equal(t, encoded, w.Bytes())
 
-	lw := &limitedDummyWriter{1}
+	lw := tagtest.NewLimitedWriter(1, false)
 	tag.Payload = sample
 	assert.Error(t, tag.SerializeValue(lw))
 
@@ -246,11 +230,11 @@ func TestILIntArrayPayload(t *testing.T) {
 		assert.Equal(t, enc, w.Bytes())
 	}
 
-	lw := &limitedDummyWriter{0}
+	lw := tagtest.NewLimitedWriter(0, false)
 	tag.Payload = []uint64{1}
 	assert.Error(t, tag.SerializeValue(lw))
 
-	lw = &limitedDummyWriter{1}
+	lw = tagtest.NewLimitedWriter(1, false)
 	assert.Error(t, tag.SerializeValue(lw))
 
 	// Deserialize
@@ -323,11 +307,11 @@ func TestILTagArrayPayload(t *testing.T) {
 		assert.Equal(t, enc, w.Bytes())
 	}
 
-	lw := &limitedDummyWriter{0}
+	lw := tagtest.NewLimitedWriter(0, false)
 	tag.Payload = []tags.ILTag{NewStdNullTag()}
 	assert.Error(t, tag.SerializeValue(lw))
 
-	lw = &limitedDummyWriter{1}
+	lw = tagtest.NewLimitedWriter(1, false)
 	assert.Error(t, tag.SerializeValue(lw))
 
 	// Deserialize
@@ -394,7 +378,7 @@ func TestILTagSequencePayload(t *testing.T) {
 		assert.Equal(t, bin, w.Bytes())
 	}
 
-	lw := &limitedDummyWriter{0}
+	lw := tagtest.NewLimitedWriter(0, false)
 	tag.Payload = []tags.ILTag{NewStdNullTag()}
 	assert.Error(t, tag.SerializeValue(lw))
 
@@ -445,9 +429,9 @@ func TestRangePayload(t *testing.T) {
 	assert.Nil(t, tag.SerializeValue(w))
 	assert.Equal(t, []byte{0xf9, 0xd9, 0xd8, 0xfa, 0xca}, w.Bytes())
 
-	lw := &limitedDummyWriter{2}
+	lw := tagtest.NewLimitedWriter(2, false)
 	assert.Error(t, tag.SerializeValue(lw))
-	lw = &limitedDummyWriter{4}
+	lw = tagtest.NewLimitedWriter(4, false)
 	assert.Error(t, tag.SerializeValue(lw))
 
 	// Deserialize
@@ -506,7 +490,7 @@ func TestVersionPayload(t *testing.T) {
 		make([]byte, 16), w.Bytes())
 
 	for i := 1; i < 16; i += 4 {
-		lw := &limitedDummyWriter{int64(i)}
+		lw := tagtest.NewLimitedWriter(i, false)
 		assert.Error(t, tag.SerializeValue(lw))
 	}
 
@@ -558,11 +542,11 @@ func TestStringDictionaryPayload(t *testing.T) {
 	tag.Map.Clear()
 	tag.Map.Put("a1", "a2")
 
-	we := &limitedDummyWriter{N: 0}
+	we := tagtest.NewLimitedWriter(0, false)
 	assert.Error(t, tag.SerializeValue(we))
-	we = &limitedDummyWriter{N: 1}
+	we = tagtest.NewLimitedWriter(1, false)
 	assert.Error(t, tag.SerializeValue(we))
-	we = &limitedDummyWriter{N: 5}
+	we = tagtest.NewLimitedWriter(5, false)
 	assert.Error(t, tag.SerializeValue(we))
 
 	// Deserialize
@@ -654,11 +638,11 @@ func TestDictionaryPayload(t *testing.T) {
 
 	tag.Map.Clear()
 	tag.Map.Put("a1", NewStdNullTag()) // 1 + (1 + 1 + 2) + (1)
-	we := &limitedDummyWriter{N: 0}
+	we := tagtest.NewLimitedWriter(0, false)
 	assert.Error(t, tag.SerializeValue(we))
-	we = &limitedDummyWriter{N: 1}
+	we = tagtest.NewLimitedWriter(1, false)
 	assert.Error(t, tag.SerializeValue(we))
-	we = &limitedDummyWriter{N: 5}
+	we = tagtest.NewLimitedWriter(5, false)
 	assert.Error(t, tag.SerializeValue(we))
 
 	// Deserialize

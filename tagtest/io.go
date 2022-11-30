@@ -30,70 +30,72 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package impl
+package tagtest
 
 import (
 	"bytes"
-	"fmt"
-	"math/rand"
-
-	"github.com/interlockledger/go-iltags/serialization"
-	"github.com/interlockledger/go-iltags/tags"
-	"github.com/interlockledger/go-iltags/tagtest"
+	"io"
 )
 
-// Creates a list of random uint64 values and its serialization as a sequence of
-// ILInt values.
-func CreateSampleILTagArray(n int) ([]tags.ILTag, []byte) {
-	l := make([]tags.ILTag, n)
-	b := bytes.NewBuffer(nil)
-	for i := 0; i < n; i++ {
-		var t tags.ILTag
-		switch i % 3 {
-		case 0:
-			r := NewStdBoolTag()
-			r.Payload = rand.Int()&0x1 == 0
-			t = r
-		case 1:
-			r := NewStdFloat32Tag()
-			r.Payload = rand.Float32()
-			t = r
-		case 2:
-			r := NewStdStringTag()
-			r.Payload = fmt.Sprintf("%d", rand.Uint64())
-			t = r
-		}
-		l[i] = t
-		if err := tags.ILTagSeralize(t, b); err != nil {
-			panic("Unable to serialize the ILTag")
-		}
-	}
-	return l, b.Bytes()
+/*
+LimitedWriter is a struct that implements the io.Writer and io.ByteWriter
+interface but can simulate IO errors along the way when a certain number of
+bytes is written to it.
+*/
+type LimitedWriter struct {
+	// If not nil, it will record all write operations.
+	W *bytes.Buffer
+	// Number of bytes avaiable before the write error.
+	N int
 }
 
-// Creates a list of random tags and its serialization.
-func CreateSampleILInt64Array(n int) ([]uint64, []byte) {
-	l := make([]uint64, n)
-	b := bytes.NewBuffer(nil)
-	for i := 0; i < n; i++ {
-		l[i] = rand.Uint64()
-		if err := serialization.WriteILInt(b, l[i]); err != nil {
-			panic("Unable to serialize the ILInt")
-		}
+/*
+Creates a new LimitedWriter with the given limit. If record is true, it will
+record the bytes written into the buffer W.
+*/
+func NewLimitedWriter(n int, record bool) *LimitedWriter {
+	w := LimitedWriter{N: n}
+	if record {
+		w.W = bytes.NewBuffer(make([]byte, 0, n))
 	}
-	return l, b.Bytes()
+	return &w
 }
 
-// Creates a list of unique random strings and its serialization as a sequence
-// of standard string tags.
-func CreateSampleStringArray(n int) ([]string, []byte) {
-
-	b := bytes.NewBuffer(nil)
-	l := tagtest.CreateUniqueStringArray(n)
-	for _, s := range l {
-		if SerializeStdStringTag(s, b) != nil {
-			panic("Unable to serialize the String")
+/*
+Implements Writer.Write(). Returns io.ErrShortWrite if the number of bytes to
+write is smaller than the number of bytes to write.
+*/
+func (w *LimitedWriter) Write(p []byte) (n int, err error) {
+	n = len(p)
+	if n <= w.N {
+		w.N -= n
+	} else {
+		n = w.N
+		w.N = 0
+		err = io.ErrShortWrite
+	}
+	if w.W != nil && p != nil && n > 0 {
+		if _, err2 := w.W.Write(p[:n]); err2 != nil {
+			panic(err2)
 		}
 	}
-	return l, b.Bytes()
+	return n, err
+}
+
+/*
+Implements ByteWriter.WriteByte(). Returns io.ErrShortWrite if the write limit
+has been reached.
+*/
+func (w *LimitedWriter) WriteByte(c byte) error {
+	if w.N > 0 {
+		w.N -= 1
+		if w.W != nil {
+			if err := w.W.WriteByte(c); err != nil {
+				panic(err)
+			}
+		}
+		return nil
+	} else {
+		return io.ErrShortWrite
+	}
 }

@@ -30,70 +30,40 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package impl
+package tagtest
 
 import (
-	"bytes"
-	"fmt"
 	"math/rand"
-
-	"github.com/interlockledger/go-iltags/serialization"
-	"github.com/interlockledger/go-iltags/tags"
-	"github.com/interlockledger/go-iltags/tagtest"
+	"strings"
+	"unicode/utf8"
 )
 
-// Creates a list of random uint64 values and its serialization as a sequence of
-// ILInt values.
-func CreateSampleILTagArray(n int) ([]tags.ILTag, []byte) {
-	l := make([]tags.ILTag, n)
-	b := bytes.NewBuffer(nil)
+// Generates a random unicode string.
+func GenerateRandomString() string {
+
+	n := rand.Int()&0x1F + 1
+	b := strings.Builder{}
 	for i := 0; i < n; i++ {
-		var t tags.ILTag
-		switch i % 3 {
-		case 0:
-			r := NewStdBoolTag()
-			r.Payload = rand.Int()&0x1 == 0
-			t = r
-		case 1:
-			r := NewStdFloat32Tag()
-			r.Payload = rand.Float32()
-			t = r
-		case 2:
-			r := NewStdStringTag()
-			r.Payload = fmt.Sprintf("%d", rand.Uint64())
-			t = r
+		r := rune(rand.Int() & 0x7FFF)
+		for !utf8.ValidRune(r) {
+			r = rune(rand.Int() & 0xFFFF)
 		}
-		l[i] = t
-		if err := tags.ILTagSeralize(t, b); err != nil {
-			panic("Unable to serialize the ILTag")
-		}
+		b.WriteRune(r)
 	}
-	return l, b.Bytes()
+	return b.String()
 }
 
-// Creates a list of random tags and its serialization.
-func CreateSampleILInt64Array(n int) ([]uint64, []byte) {
-	l := make([]uint64, n)
-	b := bytes.NewBuffer(nil)
+// Creates a list of unique random strings.
+func CreateUniqueStringArray(n int) []string {
+
+	l := make([]string, n)
+	dl := make(map[string]bool, n)
 	for i := 0; i < n; i++ {
-		l[i] = rand.Uint64()
-		if err := serialization.WriteILInt(b, l[i]); err != nil {
-			panic("Unable to serialize the ILInt")
+		s := GenerateRandomString()
+		if _, ok := dl[s]; !ok {
+			dl[s] = true
+			l[i] = s
 		}
 	}
-	return l, b.Bytes()
-}
-
-// Creates a list of unique random strings and its serialization as a sequence
-// of standard string tags.
-func CreateSampleStringArray(n int) ([]string, []byte) {
-
-	b := bytes.NewBuffer(nil)
-	l := tagtest.CreateUniqueStringArray(n)
-	for _, s := range l {
-		if SerializeStdStringTag(s, b) != nil {
-			panic("Unable to serialize the String")
-		}
-	}
-	return l, b.Bytes()
+	return l
 }
