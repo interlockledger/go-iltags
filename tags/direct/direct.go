@@ -33,6 +33,7 @@
 package direct
 
 import (
+	"encoding/binary"
 	"io"
 
 	"github.com/interlockledger/go-iltags/ilint"
@@ -162,6 +163,8 @@ func serializeStandardUInt8TagCore(tagId tags.TagID, v uint8, writer io.Writer) 
 	return err
 }
 
+//------------------------------------------------------------------------------
+
 /*
 Serializes a standard BoolTag directly into a writer.
 */
@@ -172,6 +175,8 @@ func SerializeStandardBoolTag(v bool, writer io.Writer) error {
 	}
 	return serializeStandardUInt8TagCore(tags.IL_BOOL_TAG_ID, b, writer)
 }
+
+//------------------------------------------------------------------------------
 
 /*
 Serializes a standard UInt8Tag directly into a writer.
@@ -206,11 +211,12 @@ func SerializeInt8Tag(tagId tags.TagID, v int8, writer io.Writer) error {
 	return SerializeUInt8Tag(tagId, uint8(v), writer)
 }
 
+//------------------------------------------------------------------------------
+
 func serializeStandardUInt16TagCore(tagId tags.TagID, v uint16, writer io.Writer) error {
 	buff := make([]byte, 1+2)
 	buff[0] = byte(tagId & 0xFF)
-	buff[1] = byte((v >> 8) & 0xFF)
-	buff[2] = byte(v & 0xFF)
+	binary.BigEndian.PutUint16(buff[1:], v)
 	_, err := writer.Write(buff)
 	return err
 }
@@ -246,4 +252,90 @@ be an explicit tag id or this function will fail.
 */
 func SerializeInt16Tag(tagId tags.TagID, v int16, writer io.Writer) error {
 	return SerializeUInt16Tag(tagId, uint16(v), writer)
+}
+
+//------------------------------------------------------------------------------
+
+func serializeStandardUInt32TagCore(tagId tags.TagID, v uint32, writer io.Writer) error {
+	buff := make([]byte, 1+4)
+	buff[0] = byte(tagId & 0xFF)
+	binary.BigEndian.PutUint32(buff[1:], v)
+	_, err := writer.Write(buff)
+	return err
+}
+
+/*
+Serializes a standard UInt32Tag directly into a writer.
+*/
+func SerializeStandardUInt32Tag(v uint32, writer io.Writer) error {
+	return serializeStandardUInt32TagCore(tags.IL_UINT32_TAG_ID, v, writer)
+}
+
+/*
+Serializes a standard Int32Tag directly into a writer.
+*/
+func SerializeStandardInt32Tag(v int32, writer io.Writer) error {
+	return serializeStandardUInt32TagCore(tags.IL_INT32_TAG_ID, uint32(v), writer)
+}
+
+/*
+Serializes a explicit UInt32Tag directly into a writer. The provided tagId must
+be an explicit tag id or this function will fail.
+*/
+func SerializeUInt32Tag(tagId tags.TagID, v uint32, writer io.Writer) error {
+	if err := serializeSmallValueTagHeader(tagId, 4, writer); err != nil {
+		return err
+	}
+	return serialization.WriteUInt32(writer, v)
+}
+
+/*
+Serializes a explicit Int32Tag directly into a writer. The provided tagId must
+be an explicit tag id or this function will fail.
+*/
+func SerializeInt32Tag(tagId tags.TagID, v int32, writer io.Writer) error {
+	return SerializeUInt32Tag(tagId, uint32(v), writer)
+}
+
+//------------------------------------------------------------------------------
+
+func serializeStandardUInt64TagCore(tagId tags.TagID, v uint64, writer io.Writer) error {
+	buff := make([]byte, 1+8)
+	buff[0] = byte(tagId & 0xFF)
+	binary.BigEndian.PutUint64(buff[1:], v)
+	_, err := writer.Write(buff)
+	return err
+}
+
+/*
+Serializes a standard UInt64Tag directly into a writer.
+*/
+func SerializeStandardUInt64Tag(v uint64, writer io.Writer) error {
+	return serializeStandardUInt64TagCore(tags.IL_UINT64_TAG_ID, v, writer)
+}
+
+/*
+Serializes a standard Int64Tag directly into a writer.
+*/
+func SerializeStandardInt64Tag(v int64, writer io.Writer) error {
+	return serializeStandardUInt64TagCore(tags.IL_INT64_TAG_ID, uint64(v), writer)
+}
+
+/*
+Serializes a explicit UInt64Tag directly into a writer. The provided tagId must
+be an explicit tag id or this function will fail.
+*/
+func SerializeUInt64Tag(tagId tags.TagID, v uint64, writer io.Writer) error {
+	if err := serializeSmallValueTagHeader(tagId, 8, writer); err != nil {
+		return err
+	}
+	return serialization.WriteUInt64(writer, v)
+}
+
+/*
+Serializes a explicit Int64Tag directly into a writer. The provided tagId must
+be an explicit tag id or this function will fail.
+*/
+func SerializeInt64Tag(tagId tags.TagID, v int64, writer io.Writer) error {
+	return SerializeUInt64Tag(tagId, uint64(v), writer)
 }
