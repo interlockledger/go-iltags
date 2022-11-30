@@ -39,6 +39,7 @@ import (
 	"github.com/interlockledger/go-iltags/ilint"
 	"github.com/interlockledger/go-iltags/serialization"
 	"github.com/interlockledger/go-iltags/tags"
+	"github.com/interlockledger/go-iltags/tags/direct"
 	"github.com/interlockledger/go-iltags/tagtest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -606,7 +607,7 @@ func TestDictionaryPayload(t *testing.T) {
 	for i := 0; i < len(sampleKeys); i++ {
 		k := sampleKeys[i]
 		v := sampleObjects[i]
-		require.Nil(t, SerializeStdStringTag(k, b))
+		require.Nil(t, direct.SerializeStdStringTag(k, b))
 		require.Nil(t, tags.ILTagSeralize(v, b))
 	}
 	encoded := b.Bytes()

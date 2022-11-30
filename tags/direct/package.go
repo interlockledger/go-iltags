@@ -30,21 +30,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package impl
+/*
+This package defines functions to deal with some primitive tags directly,
+without the need to instantiate tag instances.
 
-import (
-	"github.com/interlockledger/go-iltags/tags"
-)
-
-// Implementation of the StringTag tag.
-type StringTag struct {
-	tags.ILTagHeaderImpl
-	StringPayload
-}
-
-// Create a new StringTag.
-func NewStringTag(id tags.TagID) *StringTag {
-	var t StringTag
-	t.SetId(id)
-	return &t
-}
+Those functions are faster than the equivalent
+*/
+package direct

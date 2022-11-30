@@ -39,6 +39,7 @@ import (
 
 	"github.com/interlockledger/go-iltags/serialization"
 	"github.com/interlockledger/go-iltags/tags"
+	"github.com/interlockledger/go-iltags/tags/direct"
 	"github.com/interlockledger/go-iltags/tagtest"
 )
 
@@ -91,7 +92,7 @@ func CreateSampleStringArray(n int) ([]string, []byte) {
 	b := bytes.NewBuffer(nil)
 	l := tagtest.CreateUniqueStringArray(n)
 	for _, s := range l {
-		if SerializeStdStringTag(s, b) != nil {
+		if direct.SerializeStdStringTag(s, b) != nil {
 			panic("Unable to serialize the String")
 		}
 	}

@@ -38,6 +38,7 @@ import (
 	"github.com/interlockledger/go-iltags/ilint"
 	"github.com/interlockledger/go-iltags/serialization"
 	"github.com/interlockledger/go-iltags/tags"
+	"github.com/interlockledger/go-iltags/tags/direct"
 )
 
 //------------------------------------------------------------------------------
@@ -470,8 +471,8 @@ type StringDictionaryPayload struct {
 func (p *StringDictionaryPayload) ValueSize() uint64 {
 	size := uint64(ilint.EncodedSize(uint64(p.Map.Size())))
 	for _, e := range p.Map.Entries() {
-		size += StdStringTagSize(e.Key)
-		size += StdStringTagSize(e.Value)
+		size += direct.StdStringTagSize(e.Key)
+		size += direct.StdStringTagSize(e.Value)
 	}
 	return size
 }
@@ -483,10 +484,10 @@ func (p *StringDictionaryPayload) SerializeValue(writer io.Writer) error {
 		return err
 	}
 	for _, e := range p.Map.Entries() {
-		if err := SerializeStdStringTag(e.Key, writer); err != nil {
+		if err := direct.SerializeStdStringTag(e.Key, writer); err != nil {
 			return err
 		}
-		if err := SerializeStdStringTag(e.Value, writer); err != nil {
+		if err := direct.SerializeStdStringTag(e.Value, writer); err != nil {
 			return err
 		}
 	}
@@ -524,11 +525,11 @@ func (p *StringDictionaryPayload) deserializeValueCore(reader *io.LimitedReader)
 		return tags.ErrBadTagFormat
 	}
 	for i := 0; i < int(size); i++ {
-		k, err := DeserializeStdStringTag(reader)
+		k, err := direct.DeserializeStdStringTag(reader)
 		if err != nil {
 			return err
 		}
-		v, err := DeserializeStdStringTag(reader)
+		v, err := direct.DeserializeStdStringTag(reader)
 		if err != nil {
 			return err
 		}
@@ -548,7 +549,7 @@ type DictionaryPayload struct {
 func (p *DictionaryPayload) ValueSize() uint64 {
 	size := uint64(ilint.EncodedSize(uint64(p.Map.Size())))
 	for _, e := range p.Map.Entries() {
-		size += StdStringTagSize(e.Key)
+		size += direct.StdStringTagSize(e.Key)
 		size += tags.ILTagSize(e.Value)
 	}
 	return size
@@ -560,7 +561,7 @@ func (p *DictionaryPayload) SerializeValue(writer io.Writer) error {
 		return err
 	}
 	for _, e := range p.Map.Entries() {
-		if err := SerializeStdStringTag(e.Key, writer); err != nil {
+		if err := direct.SerializeStdStringTag(e.Key, writer); err != nil {
 			return err
 		}
 		if err := tags.ILTagSeralize(e.Value, writer); err != nil {
@@ -602,7 +603,7 @@ func (p *DictionaryPayload) deserializeValueCore(factory tags.ILTagFactory, read
 	}
 	p.Map.Clear()
 	for i := 0; i < int(size); i++ {
-		k, err := DeserializeStdStringTag(reader)
+		k, err := direct.DeserializeStdStringTag(reader)
 		if err != nil {
 			return err
 		}
