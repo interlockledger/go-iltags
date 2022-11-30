@@ -558,3 +558,33 @@ func TestILTagDeserializeIntoOrNull(t *testing.T) {
 	assert.ErrorIs(t, err, io.EOF)
 	assert.False(t, nullTag)
 }
+
+func TestGetExplicitTagSize(t *testing.T) {
+
+	// The smallest tag possible
+	assert.Equal(t, uint64(1+1), GetExplicitTagSize(16, 0))
+
+	// A typical tag
+	assert.Equal(t, uint64(1+1+10), GetExplicitTagSize(16, 10))
+
+	// ILInt limits - From ilint_test.go
+	assert.Equal(t, uint64(1+9+0x123456789ABCEE7), GetExplicitTagSize(0xF7, 0x123456789ABCEE7))
+	assert.Equal(t, uint64(2+8+0x123456789ACC5), GetExplicitTagSize(0xF8, 0x123456789ACC5))
+	assert.Equal(t, uint64(3+7+0x012345678AA3), GetExplicitTagSize(0x021B, 0x012345678AA3))
+	assert.Equal(t, uint64(4+6+0x0123456881), GetExplicitTagSize(0x01243D, 0x0123456881))
+	assert.Equal(t, uint64(5+5+0x0123465F), GetExplicitTagSize(0x0123465F, 0x0123465F))
+	assert.Equal(t, uint64(6+4+0x01243D), GetExplicitTagSize(0x0123456881, 0x01243D))
+	assert.Equal(t, uint64(7+3+0x021B), GetExplicitTagSize(0x012345678AA3, 0x021B))
+	assert.Equal(t, uint64(8+2+0xF8), GetExplicitTagSize(0x123456789ACC5, 0xF8))
+	assert.Equal(t, uint64(9+1+0xF7), GetExplicitTagSize(0x123456789ABCEE7, 0xF7))
+
+	assert.Equal(t, uint64(1+1+10),
+		GetExplicitTagSize(16, 10))
+
+	// Maximum possible tag size
+	assert.Equal(t, uint64(1+9+0xFFFF_FFFF_FFFF_FFF5),
+		GetExplicitTagSize(16, 0xFFFF_FFFF_FFFF_FFF5))
+	assert.Equal(t, uint64(9+9+0xFFFF_FFFF_FFFF_FFED),
+		GetExplicitTagSize(0xFFFF_FFFF_FFFF_FFFF,
+			0xFFFF_FFFF_FFFF_FFED))
+}

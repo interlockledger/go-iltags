@@ -304,3 +304,29 @@ func ILTagDeserializeIntoOrNull(factory ILTagFactory, reader io.Reader,
 		return false, nil
 	}
 }
+
+/*
+Returns the size of the header of the tag.
+*/
+func ComputeagHeaderSize(tag ILTag) uint64 {
+	size := uint64(ilint.EncodedSize(tag.Id().UInt64()))
+	if !tag.Id().Implicit() {
+		size += uint64(ilint.EncodedSize(tag.ValueSize()))
+	}
+	return size
+}
+
+/*
+Returns the total size of an explicit tag based on its ID and payload size.
+
+The result of this function is meaningless if the given tag ID is not assigned
+to an explicit tag. It will also happens if the valueSize is larger than
+18446744073709551597 (because the total size will exceed 2^64-1).
+
+Since 2022.11.30
+*/
+func GetExplicitTagSize(id TagID, valueSize uint64) uint64 {
+	return uint64(ilint.EncodedSize(id.UInt64())) +
+		uint64(ilint.EncodedSize(valueSize)) +
+		valueSize
+}
