@@ -141,6 +141,33 @@ func TestTimestapTag_GetTimestampUTC(t *testing.T) {
 	assert.Equal(t, now.Location(), ts.Location())
 }
 
+func TestSerializeTimestapTag(t *testing.T) {
+	now := time.Now()
+
+	w := bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeTimestapTag(12345, now, w))
+
+	tag := NewTimestapTag(12345)
+	r := bytes.NewReader(w.Bytes())
+	assert.Nil(t, tags.ILTagDeserializeInto(nil, r, tag))
+	assert.Equal(t, time.UnixMicro(now.UnixMicro()), tag.GetTimestamp())
+	assert.Equal(t, now.UnixMicro(), tag.GetTimestamp().UnixMicro())
+}
+
+func TestDeerializeTimestapTag(t *testing.T) {
+	now := time.Now()
+
+	w := bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeTimestapTag(12345, now, w))
+
+	ts, err := DeserializeTimestapTag(12345, bytes.NewReader(w.Bytes()))
+	assert.Nil(t, err)
+	assert.Equal(t, now.UnixMicro(), ts.UnixMicro())
+
+	_, err = DeserializeTimestapTag(12347, bytes.NewReader(w.Bytes()))
+	assert.ErrorIs(t, err, tags.ErrUnexpectedTagId)
+}
+
 //------------------------------------------------------------------------------
 
 func TestTimestampTZPayload(t *testing.T) {

@@ -38,6 +38,7 @@ import (
 
 	"github.com/interlockledger/go-iltags/serialization"
 	"github.com/interlockledger/go-iltags/tags"
+	"github.com/interlockledger/go-iltags/tags/direct"
 	"github.com/interlockledger/go-iltags/tags/impl"
 )
 
@@ -88,6 +89,28 @@ at UTC.
 */
 func (t *TimestapTag) GetTimestampUTC() time.Time {
 	return t.GetTimestamp().UTC()
+}
+
+/*
+Serializes a TimestapTag directly into a writer. The provided tagId must belong
+to an explicit tag.
+*/
+func SerializeTimestapTag(tagId tags.TagID, v time.Time, writer io.Writer) error {
+	return direct.SerializeSignedILIntTag(tagId, v.UnixMicro(), writer)
+}
+
+/*
+Deserializes a TimestapTag directly from a reader. The provided tagId must match
+the expected tagId.
+
+The returned time will be at the local timezone.
+*/
+func DeserializeTimestapTag(tagId tags.TagID, reader io.Reader) (time.Time, error) {
+	if v, err := direct.DeserializeSignedILIntTag(tagId, reader); err != nil {
+		return time.Time{}, err
+	} else {
+		return time.UnixMicro(v), nil
+	}
 }
 
 //------------------------------------------------------------------------------
