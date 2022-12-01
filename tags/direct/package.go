@@ -34,6 +34,7 @@
 This package defines functions to deal with some primitive tags directly,
 without the need to instantiate tag instances.
 
-Those functions are faster than the equivalent
+Those functions are faster and consumes less memory than those associated with
+the tag structures.
 */
 package direct
