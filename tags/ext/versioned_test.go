@@ -228,3 +228,100 @@ func TestNewVersionedPayloadTag(t *testing.T) {
 		NewVersionedPayloadTag(15, &DummyVersionedPayloadData{})
 	})
 }
+
+//------------------------------------------------------------------------------
+
+//------------------------------------------------------------------------------
+
+func TestIL2VersionedPayload(t *testing.T) {
+	var _ tags.ILTagPayload = (*IL2VersionedPayload[*DummyVersionedPayloadData])(nil)
+}
+
+func TestIL2VersionedPayload_ValueSize(t *testing.T) {
+	p := &IL2VersionedPayload[*DummyVersionedPayloadData]{}
+
+	assert.Equal(t, uint64(3+8), p.ValueSize())
+}
+
+func TestIL2VersionedPayload_SerializeValue(t *testing.T) {
+	p := &IL2VersionedPayload[*DummyVersionedPayloadData]{}
+
+	p.Data = &DummyVersionedPayloadData{}
+	p.Data.Value = 0x0123456789ABCDEF
+	w := bytes.NewBuffer(nil)
+	assert.Nil(t, p.SerializeValue(w))
+	assert.Equal(t, []byte{0x05, 0x00, 0x01, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF},
+		w.Bytes())
+
+	dw := &DummyWriter{Limit: 1}
+	assert.Error(t, p.SerializeValue(dw))
+
+	dw = &DummyWriter{Limit: 9}
+	assert.Error(t, p.SerializeValue(dw))
+}
+
+func TestIL2VersionedPayload_DeserializeValue(t *testing.T) {
+	p := &IL2VersionedPayload[*DummyVersionedPayloadData]{Data: &DummyVersionedPayloadData{}}
+	p.Data.Value = 0
+
+	bin := []byte{0x5, 0x00, 0x00, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}
+	r := bytes.NewReader(bin)
+	assert.Nil(t, p.DeserializeValue(nil, len(bin), r))
+	assert.Equal(t, uint64(0x0123456789ABCDEF), p.Data.Value)
+	assert.Equal(t, uint16(0), p.Data.ReceivedVersion)
+
+	bin = []byte{0x5, 0x00, 0x01, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}
+	r = bytes.NewReader(bin)
+	assert.Nil(t, p.DeserializeValue(nil, len(bin), r))
+	assert.Equal(t, uint64(0x0123456789ABCDEF), p.Data.Value)
+	assert.Equal(t, uint16(1), p.Data.ReceivedVersion)
+
+	bin = []byte{0x5, 0x00, 0x01, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}
+	r = bytes.NewReader(bin)
+	assert.Nil(t, p.DeserializeValue(nil, len(bin), r))
+
+	// Too small
+	assert.ErrorIs(t, p.DeserializeValue(nil, 1, r), tags.ErrBadTagFormat)
+
+	// Corrupted version tag
+	bin = []byte{0x4, 0x0, 0x01}
+	r = bytes.NewReader(bin)
+	assert.ErrorIs(t, p.DeserializeValue(nil, len(bin), r), tags.ErrUnexpectedTagId)
+
+	// Truncated bytes
+	bin = []byte{0x5, 0x00, 0x01, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD}
+	r = bytes.NewReader(bin)
+	assert.ErrorIs(t, p.DeserializeValue(nil, len(bin), r), io.ErrUnexpectedEOF)
+
+	// Too much data
+	bin = []byte{0x5, 0x00, 0x01, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF, 0x00}
+	r = bytes.NewReader(bin)
+	assert.ErrorIs(t, p.DeserializeValue(nil, len(bin), r), tags.ErrBadTagFormat)
+
+	// Usupported version 0x00FF
+	bin = []byte{0x5, 0x00, 0xff, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}
+	r = bytes.NewReader(bin)
+	assert.ErrorIs(t, p.DeserializeValue(nil, len(bin), r), tags.ErrBadTagFormat)
+
+	// Buggie implementation
+	bin = []byte{0x5, 0x00, 0x01, 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF}
+	r = bytes.NewReader(bin)
+	p1 := &VersionedPayload[*BuggyDummyVersionedPayloadData]{
+		Data: &BuggyDummyVersionedPayloadData{}}
+	p1.Data.Value = 0
+	assert.ErrorIs(t, p1.DeserializeValue(nil, len(bin), r), tags.ErrBadTagFormat)
+}
+
+//------------------------------------------------------------------------------
+
+type DummyIL2VersionedTag = IL2VersionedPayloadTag[*DummyVersionedPayloadData]
+
+func TestNewIL2VersionedPayloadTag(t *testing.T) {
+	var tag *DummyIL2VersionedTag = NewIL2VersionedPayloadTag(16, &DummyVersionedPayloadData{})
+	var _ tags.ILTag = tag
+	assert.Equal(t, tags.TagID(16), tag.Id())
+
+	assert.Panics(t, func() {
+		NewIL2VersionedPayloadTag(15, &DummyVersionedPayloadData{})
+	})
+}

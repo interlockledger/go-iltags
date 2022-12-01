@@ -38,6 +38,7 @@ import (
 
 	"github.com/interlockledger/go-iltags/serialization"
 	"github.com/interlockledger/go-iltags/tags"
+	"github.com/interlockledger/go-iltags/tags/direct"
 )
 
 /*
@@ -190,6 +191,113 @@ func NewVersionedPayloadTag[T VersionedPayloadData](id tags.TagID, data T) *Vers
 		panic("This tag cannot have an implicit tag id.")
 	}
 	var t VersionedPayloadTag[T]
+	t.SetId(id)
+	t.Data = data
+	t.Data.Version()
+	return &t
+}
+
+//------------------------------------------------------------------------------
+
+/*
+IL2VersionedPayload is a generic Implementation of ILTagPayload that
+encapsulates a strutct that implements the interface VersionedPayloadData. It
+can be used to easly implement payloads that have multiple serialization
+versions.
+
+It is similar to VersionedPayload but stores the version as a UInt16Tag instead
+of a plain uint16. This makes it more suitable to be combined with with other
+payloads that are also composed by tags, just like ILTagSequenceTag.
+
+This variant is used by IL2 core to represent versioned payloads composed by
+sequences of other ILTags.
+
+It can be declared as:
+
+	p := IL2VersionedPayload[*MyVersionedPayload]{Data: &{MyVersionedPayload}}
+
+where MyVersionedPayload is a struct that implements the VersionedPayloadData
+interface.
+
+This payload is than used implement a IL2VersionedPayloadTag.
+*/
+type IL2VersionedPayload[T VersionedPayloadData] struct {
+	/*
+		The instance of VersionedPayloadData that provides the actual data. It
+		must be manually initialize of the methods of this struct will panic
+		with access to a nil poiter.
+	*/
+	Data T
+}
+
+// Implementation of ILTagPayload.ValueSize()
+func (p *IL2VersionedPayload[T]) ValueSize() uint64 {
+	return direct.IL_UINT16_TAG_ID_SIZE + p.Data.Size()
+}
+
+// Implementation of ILTagPayload.SerializeValue()
+func (p *IL2VersionedPayload[T]) SerializeValue(writer io.Writer) error {
+	if err := direct.SerializeStdUInt16Tag(p.Data.Version(), writer); err != nil {
+		return err
+	}
+	return p.Data.Serialize(writer)
+}
+
+// Implementation of ILTagPayload.DeserializeValue()
+func (p *IL2VersionedPayload[T]) DeserializeValue(factory tags.ILTagFactory, valueSize int, reader io.Reader) error {
+	if valueSize < int(direct.IL_UINT16_TAG_ID_SIZE) {
+		return tags.ErrBadTagFormat
+	}
+	r := &io.LimitedReader{R: reader, N: int64(valueSize)}
+	version, err := direct.DeserializeStdUInt16Tag(r)
+	if err != nil {
+		return fmt.Errorf("corrupted version: %w", err)
+	}
+	if !p.Data.SupportedVersion(uint16(version)) {
+		return fmt.Errorf("unsupported version %d: %w", version, tags.ErrBadTagFormat)
+	}
+	if err := p.Data.Deserialize(version, factory, valueSize-2, r); err != nil {
+		return err
+	}
+	if r.N != 0 {
+		return tags.ErrBadTagFormat
+	}
+	return nil
+}
+
+/*
+IL2VersionedPayloadTag is a generic tag that stores a versioned payload. The
+version is stored as an UInt16Tag value while the actual data serialization is
+provided by the struct that implements the interface VersionedPayloadData. This
+variant is used by most of the tags defined by the IL2 core.
+
+Since it is not a standard tag it does not have a Standard tag ID associated
+with it.
+
+One of the ways to define its type is:
+
+	type MyVersionedTag = IL2VersionedPayloadTag[*MyVersionedPayload]
+
+where MyVersionedPayload is a struct that implements the VersionedPayloadData
+inteface.
+*/
+type IL2VersionedPayloadTag[T VersionedPayloadData] struct {
+	tags.ILTagHeaderImpl
+	IL2VersionedPayload[T]
+}
+
+/*
+Create a new IL2VersionedPayloadTag. It takes a tag id and a pointer to the
+instance of the struct that implements the IL2VersionedPayloadData interface.
+
+This function panics if the provided id is reserved for implicit tags or data is
+nil.
+*/
+func NewIL2VersionedPayloadTag[T VersionedPayloadData](id tags.TagID, data T) *IL2VersionedPayloadTag[T] {
+	if id.Implicit() {
+		panic("This tag cannot have an implicit tag id.")
+	}
+	var t IL2VersionedPayloadTag[T]
 	t.SetId(id)
 	t.Data = data
 	t.Data.Version()
