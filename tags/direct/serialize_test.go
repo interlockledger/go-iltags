@@ -3,6 +3,7 @@ package direct
 import (
 	"bytes"
 	"io"
+	"math"
 	"testing"
 
 	"github.com/interlockledger/go-iltags/ilint"
@@ -60,44 +61,94 @@ func TestSerializeSmallValueTagHeader(t *testing.T) {
 	assert.ErrorIs(t, serializeSmallValueTagHeader(0xF8, 0xf7, w), io.ErrShortWrite)
 }
 
-//------------------------------------------------------------------------------
-
-func TestSerializeStandardBoolTag(t *testing.T) {
+// ------------------------------------------------------------------------------
+func TestSerializeStdNullTag(t *testing.T) {
 
 	w := bytes.NewBuffer(nil)
-	assert.Nil(t, SerializeStandardBoolTag(false, w))
+	assert.Nil(t, SerializeStdNullTag(w))
+	assert.Equal(t, []byte{0x0}, w.Bytes())
+
+	w1 := tagtest.NewLimitedWriter(0, false)
+	assert.ErrorIs(t, SerializeStdNullTag(w1),
+		io.ErrShortWrite)
+}
+
+func TestSerializeNullTag(t *testing.T) {
+
+	w := bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeNullTag(0x16, w))
+	assert.Equal(t, []byte{
+		0x16,
+		0x0}, w.Bytes())
+
+	w = bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeNullTag(0x1234567890ABCDEF, w))
+	assert.Equal(t, []byte{0xff, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcc, 0xf7,
+		0x0}, w.Bytes())
+
+	w1 := tagtest.NewLimitedWriter(1, false)
+	assert.ErrorIs(t, SerializeNullTag(0xFA, w1),
+		io.ErrShortWrite)
+}
+
+//------------------------------------------------------------------------------
+
+func TestSerializeStdBoolTag(t *testing.T) {
+
+	w := bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeStdBoolTag(false, w))
 	assert.Equal(t, []byte{0x1, 0x0}, w.Bytes())
 
 	w = bytes.NewBuffer(nil)
-	assert.Nil(t, SerializeStandardBoolTag(true, w))
+	assert.Nil(t, SerializeStdBoolTag(true, w))
 	assert.Equal(t, []byte{0x1, 0x1}, w.Bytes())
 
 	w1 := tagtest.NewLimitedWriter(1, false)
-	assert.ErrorIs(t, SerializeStandardUInt8Tag(0xFA, w1),
+	assert.ErrorIs(t, SerializeStdBoolTag(true, w1),
+		io.ErrShortWrite)
+}
+
+func TestSerializeBoolTag(t *testing.T) {
+
+	w := bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeBoolTag(0x16, false, w))
+	assert.Equal(t, []byte{
+		0x16,
+		0x1,
+		0x0}, w.Bytes())
+
+	w = bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeBoolTag(0x1234567890ABCDEF, true, w))
+	assert.Equal(t, []byte{0xff, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcc, 0xf7,
+		0x1,
+		0x01}, w.Bytes())
+
+	w1 := tagtest.NewLimitedWriter(1, false)
+	assert.ErrorIs(t, SerializeBoolTag(0xFA, true, w1),
 		io.ErrShortWrite)
 }
 
 //------------------------------------------------------------------------------
 
-func TestSerializeStandardInt8Tag(t *testing.T) {
+func TestSerializeStdInt8Tag(t *testing.T) {
 
 	w := bytes.NewBuffer(nil)
-	assert.Nil(t, SerializeStandardInt8Tag(-4, w))
+	assert.Nil(t, SerializeStdInt8Tag(-4, w))
 	assert.Equal(t, []byte{0x2, 0xfc}, w.Bytes())
 
 	w1 := tagtest.NewLimitedWriter(1, false)
-	assert.ErrorIs(t, SerializeStandardUInt8Tag(0xFA, w1),
+	assert.ErrorIs(t, SerializeStdUInt8Tag(0xFA, w1),
 		io.ErrShortWrite)
 }
 
-func TestSerializeStandardUInt8Tag(t *testing.T) {
+func TestSerializeStdUInt8Tag(t *testing.T) {
 
 	w := bytes.NewBuffer(nil)
-	assert.Nil(t, SerializeStandardUInt8Tag(0xFA, w))
+	assert.Nil(t, SerializeStdUInt8Tag(0xFA, w))
 	assert.Equal(t, []byte{0x3, 0xfa}, w.Bytes())
 
 	w1 := tagtest.NewLimitedWriter(1, false)
-	assert.ErrorIs(t, SerializeStandardUInt8Tag(0xFA, w1),
+	assert.ErrorIs(t, SerializeStdUInt8Tag(0xFA, w1),
 		io.ErrShortWrite)
 }
 
@@ -142,35 +193,35 @@ func TestSerializeInt8Tag(t *testing.T) {
 
 //------------------------------------------------------------------------------
 
-func TestSerializeStandardInt16Tag(t *testing.T) {
+func TestSerializeStdInt16Tag(t *testing.T) {
 
 	w := bytes.NewBuffer(nil)
-	assert.Nil(t, SerializeStandardInt16Tag(0x0123, w))
+	assert.Nil(t, SerializeStdInt16Tag(0x0123, w))
 	assert.Equal(t, []byte{
 		0x4,
 		0x1, 0x23}, w.Bytes())
 
 	w = bytes.NewBuffer(nil)
-	assert.Nil(t, SerializeStandardInt16Tag(-0x0123, w))
+	assert.Nil(t, SerializeStdInt16Tag(-0x0123, w))
 	assert.Equal(t, []byte{
 		0x4,
 		0xfe, 0xdd}, w.Bytes())
 
 	w1 := tagtest.NewLimitedWriter(1, false)
-	assert.ErrorIs(t, SerializeStandardUInt16Tag(0xFA, w1),
+	assert.ErrorIs(t, SerializeStdUInt16Tag(0xFA, w1),
 		io.ErrShortWrite)
 }
 
-func TestSerializeStandardUInt16Tag(t *testing.T) {
+func TestSerializeStdUInt16Tag(t *testing.T) {
 
 	w := bytes.NewBuffer(nil)
-	assert.Nil(t, SerializeStandardUInt16Tag(0xFA, w))
+	assert.Nil(t, SerializeStdUInt16Tag(0xFA, w))
 	assert.Equal(t, []byte{
 		0x5,
 		0x0, 0xfa}, w.Bytes())
 
 	w1 := tagtest.NewLimitedWriter(1, false)
-	assert.ErrorIs(t, SerializeStandardUInt16Tag(0xFA, w1),
+	assert.ErrorIs(t, SerializeStdUInt16Tag(0xFA, w1),
 		io.ErrShortWrite)
 }
 
@@ -219,33 +270,33 @@ func TestSerializeInt16Tag(t *testing.T) {
 
 //------------------------------------------------------------------------------
 
-func TestSerializeStandardInt32Tag(t *testing.T) {
+func TestSerializeStdInt32Tag(t *testing.T) {
 
 	w := bytes.NewBuffer(nil)
-	assert.Nil(t, SerializeStandardInt32Tag(0x01234567, w))
+	assert.Nil(t, SerializeStdInt32Tag(0x01234567, w))
 	assert.Equal(t, []byte{0x6,
 		0x01, 0x23, 0x45, 0x67}, w.Bytes())
 
 	w = bytes.NewBuffer(nil)
-	assert.Nil(t, SerializeStandardInt32Tag(-0x01234567, w))
+	assert.Nil(t, SerializeStdInt32Tag(-0x01234567, w))
 	assert.Equal(t, []byte{0x6,
 		0xfe, 0xdc, 0xba, 0x99}, w.Bytes())
 
 	w1 := tagtest.NewLimitedWriter(1, false)
-	assert.ErrorIs(t, SerializeStandardUInt32Tag(0xFA, w1),
+	assert.ErrorIs(t, SerializeStdUInt32Tag(0xFA, w1),
 		io.ErrShortWrite)
 }
 
-func TestSerializeStandardUInt32Tag(t *testing.T) {
+func TestSerializeStdUInt32Tag(t *testing.T) {
 
 	w := bytes.NewBuffer(nil)
-	assert.Nil(t, SerializeStandardUInt32Tag(0x01234567, w))
+	assert.Nil(t, SerializeStdUInt32Tag(0x01234567, w))
 	assert.Equal(t, []byte{
 		0x7,
 		0x01, 0x23, 0x45, 0x67}, w.Bytes())
 
 	w1 := tagtest.NewLimitedWriter(1, false)
-	assert.ErrorIs(t, SerializeStandardUInt32Tag(0xFA, w1),
+	assert.ErrorIs(t, SerializeStdUInt32Tag(0xFA, w1),
 		io.ErrShortWrite)
 }
 
@@ -293,33 +344,33 @@ func TestSerializeInt32Tag(t *testing.T) {
 
 //------------------------------------------------------------------------------
 
-func TestSerializeStandardInt64Tag(t *testing.T) {
+func TestSerializeStdInt64Tag(t *testing.T) {
 
 	w := bytes.NewBuffer(nil)
-	assert.Nil(t, SerializeStandardInt64Tag(0x0123456789ABCDEF, w))
+	assert.Nil(t, SerializeStdInt64Tag(0x0123456789ABCDEF, w))
 	assert.Equal(t, []byte{0x8,
 		0x1, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef}, w.Bytes())
 
 	w = bytes.NewBuffer(nil)
-	assert.Nil(t, SerializeStandardInt64Tag(-0x0123456789ABCDEF, w))
+	assert.Nil(t, SerializeStdInt64Tag(-0x0123456789ABCDEF, w))
 	assert.Equal(t, []byte{0x8,
 		0xfe, 0xdc, 0xba, 0x98, 0x76, 0x54, 0x32, 0x11}, w.Bytes())
 
 	w1 := tagtest.NewLimitedWriter(1, false)
-	assert.ErrorIs(t, SerializeStandardUInt64Tag(0xFA, w1),
+	assert.ErrorIs(t, SerializeStdUInt64Tag(0xFA, w1),
 		io.ErrShortWrite)
 }
 
-func TestSerializeStandardUInt64Tag(t *testing.T) {
+func TestSerializeStdUInt64Tag(t *testing.T) {
 
 	w := bytes.NewBuffer(nil)
-	assert.Nil(t, SerializeStandardUInt64Tag(0x0123456789ABCDEF, w))
+	assert.Nil(t, SerializeStdUInt64Tag(0x0123456789ABCDEF, w))
 	assert.Equal(t, []byte{
 		0x9,
 		0x1, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef}, w.Bytes())
 
 	w1 := tagtest.NewLimitedWriter(1, false)
-	assert.ErrorIs(t, SerializeStandardUInt64Tag(0xFA, w1),
+	assert.ErrorIs(t, SerializeStdUInt64Tag(0xFA, w1),
 		io.ErrShortWrite)
 }
 
@@ -363,4 +414,224 @@ func TestSerializeInt64Tag(t *testing.T) {
 	w1 := tagtest.NewLimitedWriter(1, false)
 	assert.ErrorIs(t, SerializeInt64Tag(0xFA, 123, w1),
 		io.ErrShortWrite)
+}
+
+//------------------------------------------------------------------------------
+
+func TestSerializeStdFloat32Tag(t *testing.T) {
+
+	w := bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeStdFloat32Tag(float32(3.14159274101257324), w))
+	assert.Equal(t, []byte{
+		0xb,
+		0x40, 0x49, 0xf, 0xdb}, w.Bytes())
+}
+
+func TestSerializeFloat32Tag(t *testing.T) {
+
+	w := bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeFloat32Tag(16, float32(3.14159274101257324), w))
+	assert.Equal(t, []byte{
+		0x10,
+		0x4,
+		0x40, 0x49, 0xf, 0xdb}, w.Bytes())
+
+	w = bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeFloat32Tag(0x1234567890ABCDEF, float32(3.14159274101257324), w))
+	assert.Equal(t, []byte{
+		0xff, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcc, 0xf7,
+		0x4,
+		0x40, 0x49, 0xf, 0xdb}, w.Bytes())
+}
+
+//------------------------------------------------------------------------------
+
+func TestSerializeStdFloat64Tag(t *testing.T) {
+	v := math.Float64frombits(0x400921FB54442D18)
+
+	w := bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeStdFloat64Tag(v, w))
+	assert.Equal(t, []byte{
+		0xc,
+		0x40, 0x09, 0x21, 0xFB, 0x54, 0x44, 0x2D, 0x18}, w.Bytes())
+}
+
+func TestSerializeFloat64Tag(t *testing.T) {
+	v := math.Float64frombits(0x400921FB54442D18)
+
+	w := bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeFloat64Tag(16, v, w))
+	assert.Equal(t, []byte{
+		0x10,
+		0x8,
+		0x40, 0x09, 0x21, 0xFB, 0x54, 0x44, 0x2D, 0x18}, w.Bytes())
+
+	w = bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeFloat64Tag(0x1234567890ABCDEF, v, w))
+	assert.Equal(t, []byte{
+		0xff, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcc, 0xf7,
+		0x8,
+		0x40, 0x09, 0x21, 0xFB, 0x54, 0x44, 0x2D, 0x18}, w.Bytes())
+}
+
+//------------------------------------------------------------------------------
+
+func TestSerializeStdFloat128Tag(t *testing.T) {
+	v := []byte{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}
+
+	w := bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeStdFloat128Tag(v, w))
+	assert.Equal(t, []byte{
+		0xd,
+		0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf}, w.Bytes())
+
+	w1 := tagtest.NewLimitedWriter(0, false)
+	assert.ErrorIs(t, SerializeStdFloat128Tag(v, w1), io.ErrShortWrite)
+}
+
+func TestSerializeFloat128Tag(t *testing.T) {
+	v := []byte{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}
+
+	w := bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeFloat128Tag(16, v, w))
+	assert.Equal(t, []byte{
+		0x10,
+		0x10,
+		0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf}, w.Bytes())
+
+	w = bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeFloat128Tag(0x1234567890ABCDEF, v, w))
+	assert.Equal(t, []byte{
+		0xff, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcc, 0xf7,
+		0x10,
+		0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf}, w.Bytes())
+
+	w1 := tagtest.NewLimitedWriter(0, false)
+	assert.ErrorIs(t, SerializeFloat128Tag(0x1234567890ABCDEF, v, w1), io.ErrShortWrite)
+
+	w1 = tagtest.NewLimitedWriter(9, false)
+	assert.ErrorIs(t, SerializeFloat128Tag(0x1234567890ABCDEF, v, w1), io.ErrShortWrite)
+}
+
+//------------------------------------------------------------------------------
+
+func TestSerializeStdILIntTag(t *testing.T) {
+	v := uint64(0x400921FB54442D18)
+
+	w := bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeStdILIntTag(v, w))
+	assert.Equal(t, []byte{
+		0xa,
+		0xff, 0x40, 0x9, 0x21, 0xfb, 0x54, 0x44, 0x2c, 0x20}, w.Bytes())
+
+	w1 := tagtest.NewLimitedWriter(0, false)
+	assert.ErrorIs(t, SerializeStdILIntTag(v, w1), io.ErrShortWrite)
+}
+
+func TestSerializeILIntTag(t *testing.T) {
+	v := uint64(0x400921FB54442D18)
+
+	w := bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeILIntTag(16, v, w))
+	assert.Equal(t, []byte{
+		0x10,
+		0x09,
+		0xff, 0x40, 0x9, 0x21, 0xfb, 0x54, 0x44, 0x2c, 0x20}, w.Bytes())
+
+	w = bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeILIntTag(0x1234567890ABCDEF, v, w))
+	assert.Equal(t, []byte{
+		0xff, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcc, 0xf7,
+		0x09,
+		0xff, 0x40, 0x9, 0x21, 0xfb, 0x54, 0x44, 0x2c, 0x20}, w.Bytes())
+
+	w1 := tagtest.NewLimitedWriter(1, false)
+	assert.ErrorIs(t, SerializeILIntTag(0x1234567890ABCDEF, v, w1), io.ErrShortWrite)
+}
+
+func TestSerializeStdSignedILIntTag(t *testing.T) {
+
+	v := int64(0)
+	w := bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeStdSignedILIntTag(v, w))
+	assert.Equal(t, []byte{
+		0xe,
+		0x0}, w.Bytes())
+
+	v = int64(1)
+	w = bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeStdSignedILIntTag(v, w))
+	assert.Equal(t, []byte{
+		0xe,
+		0x02}, w.Bytes())
+
+	v = int64(-1)
+	w = bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeStdSignedILIntTag(v, w))
+	assert.Equal(t, []byte{
+		0xe,
+		0x01}, w.Bytes())
+
+	v = int64(9223372036854775807)
+	w = bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeStdSignedILIntTag(v, w))
+	assert.Equal(t, []byte{
+		0xe,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x6}, w.Bytes())
+
+	v = int64(-9223372036854775808)
+	w = bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeStdSignedILIntTag(v, w))
+	assert.Equal(t, []byte{
+		0xe,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x7}, w.Bytes())
+
+	w1 := tagtest.NewLimitedWriter(0, false)
+	assert.ErrorIs(t, SerializeStdSignedILIntTag(v, w1), io.ErrShortWrite)
+}
+
+func TestSerializeSignedILIntTag(t *testing.T) {
+
+	v := int64(0)
+	w := bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeSignedILIntTag(16, v, w))
+	assert.Equal(t, []byte{
+		0x10,
+		0x01,
+		0x0}, w.Bytes())
+
+	w = bytes.NewBuffer(nil)
+	v = 1
+	assert.Nil(t, SerializeSignedILIntTag(0x1234567890ABCDEF, v, w))
+	assert.Equal(t, []byte{
+		0xff, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcc, 0xf7,
+		0x01,
+		0x02}, w.Bytes())
+
+	w = bytes.NewBuffer(nil)
+	v = -1
+	assert.Nil(t, SerializeSignedILIntTag(0x1234567890ABCDEF, v, w))
+	assert.Equal(t, []byte{
+		0xff, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcc, 0xf7,
+		0x01,
+		0x01}, w.Bytes())
+
+	w = bytes.NewBuffer(nil)
+	v = 9223372036854775807
+	assert.Nil(t, SerializeSignedILIntTag(0x1234567890ABCDEF, v, w))
+	assert.Equal(t, []byte{
+		0xff, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcc, 0xf7,
+		0x09,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x6}, w.Bytes())
+
+	w = bytes.NewBuffer(nil)
+	v = -9223372036854775808
+	assert.Nil(t, SerializeSignedILIntTag(0x1234567890ABCDEF, v, w))
+	assert.Equal(t, []byte{
+		0xff, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcc, 0xf7,
+		0x09,
+		0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x7}, w.Bytes())
+
+	w1 := tagtest.NewLimitedWriter(1, false)
+	assert.ErrorIs(t, SerializeSignedILIntTag(0x1234567890ABCDEF, v, w1), io.ErrShortWrite)
 }
