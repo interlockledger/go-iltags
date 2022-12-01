@@ -39,9 +39,11 @@ import (
 	"testing"
 
 	"github.com/interlockledger/go-iltags/ilint"
+	"github.com/interlockledger/go-iltags/serialization"
 	"github.com/interlockledger/go-iltags/tags"
 	"github.com/interlockledger/go-iltags/tagtest"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var SAMPLE_TAG_IDS = []tags.TagID{
@@ -666,4 +668,40 @@ func TestSerializeSignedILIntTag(t *testing.T) {
 
 	w1 := tagtest.NewLimitedWriter(1, false)
 	assert.ErrorIs(t, SerializeSignedILIntTag(0x1234567890ABCDEF, v, w1), io.ErrShortWrite)
+}
+
+func TestSerializeRawTag(t *testing.T) {
+
+	for _, id := range SAMPLE_TAG_IDS {
+		for size := 0; size < 512; size += 64 {
+			v := tagtest.FillSeq(make([]byte, size))
+			exp := bytes.NewBuffer(nil)
+			require.Nil(t, serialization.WriteILInt(exp, id.UInt64()))
+			require.Nil(t, serialization.WriteILInt(exp, uint64(len(v))))
+			n, err := exp.Write(v)
+			require.Nil(t, err)
+			require.Equal(t, len(v), n)
+
+			w := bytes.NewBuffer(nil)
+			assert.Nil(t, SerializeRawTag(id, v, w))
+			assert.Equal(t, exp.Bytes(), w.Bytes())
+		}
+	}
+}
+
+func TestSerializeStdBytesTag(t *testing.T) {
+
+	for size := 0; size < 512; size += 17 {
+		v := tagtest.FillSeq(make([]byte, size))
+		exp := bytes.NewBuffer(nil)
+		require.Nil(t, serialization.WriteUInt8(exp, 0x10))
+		require.Nil(t, serialization.WriteILInt(exp, uint64(len(v))))
+		n, err := exp.Write(v)
+		require.Nil(t, err)
+		require.Equal(t, len(v), n)
+
+		w := bytes.NewBuffer(nil)
+		assert.Nil(t, SerializeStdBytesTag(v, w))
+		assert.Equal(t, exp.Bytes(), w.Bytes())
+	}
 }

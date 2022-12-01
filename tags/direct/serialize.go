@@ -316,21 +316,6 @@ func SerializeStdFloat128Tag(v []byte, writer io.Writer) error {
 }
 
 /*
-Serializes a RawTag directly into a writer. The tagId must be an explict tag
-or the behavior of ths function is undefined.
-*/
-func SerializeRawTag(tagId tags.TagID, v []byte, writer io.Writer) error {
-	if err := serializeTagId(tagId, writer); err != nil {
-		return err
-	}
-	if _, err := ilint.EncodeToWriter(uint64(len(v)), writer); err != nil {
-		return err
-	}
-	_, err := writer.Write(v[:16])
-	return err
-}
-
-/*
 Serializes a Float32Tag directly into a writer. Tne value v must have
 at least 16 bytes in length or this function will panic.
 */
@@ -384,4 +369,29 @@ func SerializeSignedILIntTag(tagId tags.TagID, v int64, writer io.Writer) error 
 	}
 	_, err := writer.Write(tmp)
 	return err
+}
+
+//------------------------------------------------------------------------------
+
+/*
+Serializes a RawTag directly into a writer. The tagId must be an explict tag
+or the behavior of ths function is undefined.
+*/
+func SerializeRawTag(tagId tags.TagID, v []byte, writer io.Writer) error {
+	if err := serializeTagId(tagId, writer); err != nil {
+		return err
+	}
+	if _, err := ilint.EncodeToWriter(uint64(len(v)), writer); err != nil {
+		return err
+	}
+	_, err := writer.Write(v)
+	return err
+}
+
+/*
+Serializes a BytesTag directly into a writer. The tagId must be an explict tag
+or the behavior of ths function is undefined.
+*/
+func SerializeStdBytesTag(v []byte, writer io.Writer) error {
+	return SerializeRawTag(tags.IL_BYTES_TAG_ID, v, writer)
 }
