@@ -35,10 +35,15 @@ package direct
 import (
 	"bytes"
 	"io"
+	"math"
 	"testing"
 
+	"github.com/interlockledger/go-iltags/ilint"
+	"github.com/interlockledger/go-iltags/serialization"
 	"github.com/interlockledger/go-iltags/tags"
+	"github.com/interlockledger/go-iltags/tagtest"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDeserializeTagId(t *testing.T) {
@@ -693,4 +698,414 @@ func TestDeserializeInt64Tag(t *testing.T) {
 	r = bytes.NewReader([]byte{0x10, 0x8, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8})
 	_, err = DeserializeInt64Tag(0x10, r)
 	assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
+}
+
+//------------------------------------------------------------------------------
+
+func TestDeserializeStdFloat32Tag(t *testing.T) {
+
+	r := bytes.NewReader([]byte{0xB, 0x2, 0x3, 0x4, 0x5})
+	v, err := DeserializeStdFloat32Tag(r)
+	assert.Nil(t, err)
+	assert.Equal(t, math.Float32frombits(0x02030405), v)
+
+	w := bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeStdFloat32Tag(0xFA, w))
+	r = bytes.NewReader(w.Bytes())
+	v, err = DeserializeStdFloat32Tag(r)
+	assert.Nil(t, err)
+	assert.Equal(t, float32(0xFA), v)
+
+	r = bytes.NewReader([]byte{0xC, 0x2, 0x3, 0x4, 0x5})
+	_, err = DeserializeStdFloat32Tag(r)
+	assert.ErrorIs(t, err, tags.ErrUnexpectedTagId)
+
+	r = bytes.NewReader([]byte{0xB, 0x2, 0x3, 0x4})
+	_, err = DeserializeStdFloat32Tag(r)
+	assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
+}
+
+func TestDeserializeFloat32Tag(t *testing.T) {
+
+	r := bytes.NewReader([]byte{0x10, 0x4, 0x2, 0x3, 0x4, 0x5})
+	v, err := DeserializeFloat32Tag(0x10, r)
+	assert.Nil(t, err)
+	assert.Equal(t, math.Float32frombits(0x02030405), v)
+
+	w := bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeFloat32Tag(0x10, 0xFA, w))
+	r = bytes.NewReader(w.Bytes())
+	v, err = DeserializeFloat32Tag(0x10, r)
+	assert.Nil(t, err)
+	assert.Equal(t, float32(0xFA), v)
+
+	r = bytes.NewReader([]byte{0x11, 0x4, 0x2, 0x3, 0x4, 0x5})
+	_, err = DeserializeFloat32Tag(0x10, r)
+	assert.ErrorIs(t, err, tags.ErrUnexpectedTagId)
+
+	r = bytes.NewReader([]byte{0x10, 0x4, 0x2, 0x3, 0x4})
+	_, err = DeserializeFloat32Tag(0x10, r)
+	assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
+}
+
+//------------------------------------------------------------------------------
+
+func TestDeserializeStdFloat64Tag(t *testing.T) {
+
+	r := bytes.NewReader([]byte{0xC, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9})
+	v, err := DeserializeStdFloat64Tag(r)
+	assert.Nil(t, err)
+	assert.Equal(t, math.Float64frombits(0x0203040506070809), v)
+
+	w := bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeStdFloat64Tag(0xFA, w))
+	r = bytes.NewReader(w.Bytes())
+	v, err = DeserializeStdFloat64Tag(r)
+	assert.Nil(t, err)
+	assert.Equal(t, float64(0xFA), v)
+
+	r = bytes.NewReader([]byte{0xD, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9})
+	_, err = DeserializeStdFloat64Tag(r)
+	assert.ErrorIs(t, err, tags.ErrUnexpectedTagId)
+
+	r = bytes.NewReader([]byte{0xC, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8})
+	_, err = DeserializeStdFloat64Tag(r)
+	assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
+}
+
+func TestDeserializeFloat64Tag(t *testing.T) {
+
+	r := bytes.NewReader([]byte{0x10, 0x8, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9})
+	v, err := DeserializeFloat64Tag(0x10, r)
+	assert.Nil(t, err)
+	assert.Equal(t, math.Float64frombits(0x0203040506070809), v)
+
+	w := bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeFloat64Tag(0x10, 0xFA, w))
+	r = bytes.NewReader(w.Bytes())
+	v, err = DeserializeFloat64Tag(0x10, r)
+	assert.Nil(t, err)
+	assert.Equal(t, float64(0xFA), v)
+
+	r = bytes.NewReader([]byte{0x11, 0x8, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9})
+	_, err = DeserializeFloat64Tag(0x10, r)
+	assert.ErrorIs(t, err, tags.ErrUnexpectedTagId)
+
+	r = bytes.NewReader([]byte{0x10, 0x8, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8})
+	_, err = DeserializeFloat64Tag(0x10, r)
+	assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
+}
+
+//------------------------------------------------------------------------------
+
+func TestDeserializeStdFloat128Tag(t *testing.T) {
+	bin128 := []byte{
+		0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9,
+		0x0, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF, 0x10}
+
+	r := bytes.NewReader([]byte{0xD,
+		0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9,
+		0x0, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF, 0x10})
+	v, err := DeserializeStdFloat128Tag(r)
+	assert.Nil(t, err)
+	assert.Equal(t, bin128, v)
+
+	w := bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeStdFloat128Tag(bin128, w))
+	r = bytes.NewReader(w.Bytes())
+	v, err = DeserializeStdFloat128Tag(r)
+	assert.Nil(t, err)
+	assert.Equal(t, bin128, v)
+
+	r = bytes.NewReader([]byte{0xE,
+		0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9,
+		0x0, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF, 0x10})
+	_, err = DeserializeStdFloat128Tag(r)
+	assert.ErrorIs(t, err, tags.ErrUnexpectedTagId)
+
+	r = bytes.NewReader([]byte{0xD})
+	_, err = DeserializeStdFloat128Tag(r)
+	assert.ErrorIs(t, err, io.EOF)
+
+	r = bytes.NewReader([]byte{0xD,
+		0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9,
+		0x0, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF})
+	_, err = DeserializeStdFloat128Tag(r)
+	assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
+}
+
+func TestDeserializeFloat128Tag(t *testing.T) {
+	bin128 := []byte{
+		0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9,
+		0x0, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF, 0x10}
+
+	r := bytes.NewReader([]byte{0x10, 0x10,
+		0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9,
+		0x0, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF, 0x10})
+	v, err := DeserializeFloat128Tag(0x10, r)
+	assert.Nil(t, err)
+	assert.Equal(t, bin128, v)
+
+	w := bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeFloat128Tag(0x10, bin128, w))
+	r = bytes.NewReader(w.Bytes())
+	v, err = DeserializeFloat128Tag(0x10, r)
+	assert.Nil(t, err)
+	assert.Equal(t, bin128, v)
+
+	r = bytes.NewReader([]byte{0x11, 0x10,
+		0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9,
+		0x0, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF, 0x10})
+	_, err = DeserializeFloat128Tag(0x10, r)
+	assert.ErrorIs(t, err, tags.ErrUnexpectedTagId)
+
+	r = bytes.NewReader([]byte{0x10, 0x10})
+	_, err = DeserializeFloat128Tag(0x10, r)
+	assert.ErrorIs(t, err, io.EOF)
+
+	r = bytes.NewReader([]byte{0x10, 0x10,
+		0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9,
+		0x0, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF})
+	_, err = DeserializeFloat128Tag(0x10, r)
+	assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
+}
+
+//------------------------------------------------------------------------------
+
+func TestDeserializeStdILIntTag(t *testing.T) {
+
+	for _, exp := range SAMPLE_TAG_SIZES {
+		enc := ilint.Encode(exp, nil)
+		buff := append([]byte{0xA}, enc...)
+
+		r := bytes.NewReader(buff)
+		v, err := DeserializeStdILIntTag(r)
+		assert.Nil(t, err)
+		assert.Equal(t, exp, v)
+
+		w := bytes.NewBuffer(nil)
+		assert.Nil(t, SerializeStdILIntTag(exp, w))
+		r = bytes.NewReader(w.Bytes())
+		v, err = DeserializeStdILIntTag(r)
+		assert.Nil(t, err)
+		assert.Equal(t, exp, v)
+	}
+
+	r := bytes.NewReader([]byte{0xB, 0xff, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcc})
+	_, err := DeserializeStdILIntTag(r)
+	assert.ErrorIs(t, err, tags.ErrUnexpectedTagId)
+
+	r = bytes.NewReader([]byte{0xA, 0xff, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab})
+	_, err = DeserializeStdILIntTag(r)
+	assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
+}
+
+func TestDeserializeILIntTag(t *testing.T) {
+
+	for _, exp := range SAMPLE_TAG_SIZES {
+		enc := ilint.Encode(exp, nil)
+		buff := append(append([]byte{0x10}, uint8(len(enc))), enc...)
+
+		r := bytes.NewReader(buff)
+		v, err := DeserializeILIntTag(0x10, r)
+		assert.Nil(t, err)
+		assert.Equal(t, exp, v)
+
+		w := bytes.NewBuffer(nil)
+		assert.Nil(t, SerializeILIntTag(0x123123123, exp, w))
+		r = bytes.NewReader(w.Bytes())
+		v, err = DeserializeILIntTag(0x123123123, r)
+		assert.Nil(t, err)
+		assert.Equal(t, exp, v)
+	}
+
+	r := bytes.NewReader([]byte{0x11, 0x8, 0xff, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcc})
+	_, err := DeserializeILIntTag(0x10, r)
+	assert.ErrorIs(t, err, tags.ErrUnexpectedTagId)
+
+	r = bytes.NewReader([]byte{0x10, 0x0, 0xff, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcc})
+	_, err = DeserializeILIntTag(0x10, r)
+	assert.ErrorIs(t, err, tags.ErrBadTagFormat)
+
+	r = bytes.NewReader([]byte{0x10, 0xA, 0xff, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcc})
+	_, err = DeserializeILIntTag(0x10, r)
+	assert.ErrorIs(t, err, tags.ErrBadTagFormat)
+
+	r = bytes.NewReader([]byte{0x10, 0x9})
+	_, err = DeserializeILIntTag(0x10, r)
+	assert.ErrorIs(t, err, io.EOF)
+
+	r = bytes.NewReader([]byte{0x10, 0x9, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff})
+	_, err = DeserializeILIntTag(0x10, r)
+	assert.ErrorIs(t, err, tags.ErrBadTagFormat)
+
+	r = bytes.NewReader([]byte{0x10, 0x8, 0xf8, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xFF})
+	_, err = DeserializeILIntTag(0x10, r)
+	assert.ErrorIs(t, err, tags.ErrBadTagFormat)
+
+	r = bytes.NewReader([]byte{0x10, 0x8, 0xff, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab})
+	_, err = DeserializeILIntTag(0x10, r)
+	assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
+}
+
+//------------------------------------------------------------------------------
+
+func TestDeserializeStdSignedILIntTag(t *testing.T) {
+
+	for _, exp1 := range SAMPLE_TAG_SIZES {
+		exp := int64(exp1)
+		enc := ilint.EncodeSigned(exp, nil)
+		buff := append([]byte{0xE}, enc...)
+
+		r := bytes.NewReader(buff)
+		v, err := DeserializeStdSignedILIntTag(r)
+		assert.Nil(t, err)
+		assert.Equal(t, exp, v)
+
+		w := bytes.NewBuffer(nil)
+		assert.Nil(t, SerializeStdSignedILIntTag(exp, w))
+		r = bytes.NewReader(w.Bytes())
+		v, err = DeserializeStdSignedILIntTag(r)
+		assert.Nil(t, err)
+		assert.Equal(t, exp, v)
+	}
+
+	r := bytes.NewReader([]byte{0xB, 0xff, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcc})
+	_, err := DeserializeStdSignedILIntTag(r)
+	assert.ErrorIs(t, err, tags.ErrUnexpectedTagId)
+
+	r = bytes.NewReader([]byte{0xE, 0xff, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab})
+	_, err = DeserializeStdSignedILIntTag(r)
+	assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
+}
+
+func TestDeserializeSignedILIntTag(t *testing.T) {
+
+	for _, exp1 := range SAMPLE_TAG_SIZES {
+		exp := int64(exp1)
+		enc := ilint.EncodeSigned(exp, nil)
+		buff := append(append([]byte{0x10}, uint8(len(enc))), enc...)
+
+		r := bytes.NewReader(buff)
+		v, err := DeserializeSignedILIntTag(0x10, r)
+		assert.Nil(t, err)
+		assert.Equal(t, exp, v)
+
+		w := bytes.NewBuffer(nil)
+		assert.Nil(t, SerializeSignedILIntTag(0x123123123, exp, w))
+		r = bytes.NewReader(w.Bytes())
+		v, err = DeserializeSignedILIntTag(0x123123123, r)
+		assert.Nil(t, err)
+		assert.Equal(t, exp, v)
+	}
+
+	r := bytes.NewReader([]byte{0x11, 0x8, 0xff, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcc})
+	_, err := DeserializeSignedILIntTag(0x10, r)
+	assert.ErrorIs(t, err, tags.ErrUnexpectedTagId)
+
+	r = bytes.NewReader([]byte{0x10, 0x0, 0xff, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcc})
+	_, err = DeserializeSignedILIntTag(0x10, r)
+	assert.ErrorIs(t, err, tags.ErrBadTagFormat)
+
+	r = bytes.NewReader([]byte{0x10, 0xA, 0xff, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcc})
+	_, err = DeserializeSignedILIntTag(0x10, r)
+	assert.ErrorIs(t, err, tags.ErrBadTagFormat)
+
+	r = bytes.NewReader([]byte{0x10, 0x9})
+	_, err = DeserializeSignedILIntTag(0x10, r)
+	assert.ErrorIs(t, err, io.EOF)
+
+	r = bytes.NewReader([]byte{0x10, 0x9, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff})
+	_, err = DeserializeSignedILIntTag(0x10, r)
+	assert.ErrorIs(t, err, tags.ErrBadTagFormat)
+
+	r = bytes.NewReader([]byte{0x10, 0x8, 0xf8, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xFF})
+	_, err = DeserializeSignedILIntTag(0x10, r)
+	assert.ErrorIs(t, err, tags.ErrBadTagFormat)
+
+	r = bytes.NewReader([]byte{0x10, 0x8, 0xff, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab})
+	_, err = DeserializeSignedILIntTag(0x10, r)
+	assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
+}
+
+//------------------------------------------------------------------------------
+
+func TestDeserializeStdBytesTag(t *testing.T) {
+
+	for size := 0; size < 512; size += 64 {
+		v := tagtest.FillSeq(make([]byte, size))
+		w := bytes.NewBuffer(nil)
+		require.Nil(t, serialization.WriteUInt8(w, 0x10))
+		require.Nil(t, serialization.WriteILInt(w, uint64(len(v))))
+		n, err := w.Write(v)
+		require.Nil(t, err)
+		require.Equal(t, len(v), n)
+
+		bin := w.Bytes()
+		r := bytes.NewReader(bin)
+		dec, err := DeserializeStdBytesTag(r)
+		assert.Nil(t, err)
+		assert.Equal(t, v, dec)
+
+	}
+
+	bin := append([]byte{0x10, 0x8}, make([]byte, 8)...)
+
+	r := bytes.NewReader(bin[:1])
+	_, err := DeserializeStdBytesTag(r)
+	assert.ErrorIs(t, err, io.EOF)
+
+	r = bytes.NewReader(bin[:2])
+	_, err = DeserializeStdBytesTag(r)
+	assert.ErrorIs(t, err, io.EOF)
+
+	r = bytes.NewReader(bin[:9])
+	_, err = DeserializeStdBytesTag(r)
+	assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
+
+	bin[0]++
+	r = bytes.NewReader(bin)
+	_, err = DeserializeStdBytesTag(r)
+	assert.ErrorIs(t, err, tags.ErrUnexpectedTagId)
+}
+
+func TestDeserializeRawTag(t *testing.T) {
+
+	for _, id := range SAMPLE_TAG_IDS {
+
+		for size := 0; size < 512; size += 64 {
+			v := tagtest.FillSeq(make([]byte, size))
+			w := bytes.NewBuffer(nil)
+			require.Nil(t, serialization.WriteILInt(w, id.UInt64()))
+			require.Nil(t, serialization.WriteILInt(w, uint64(len(v))))
+			n, err := w.Write(v)
+			require.Nil(t, err)
+			require.Equal(t, len(v), n)
+
+			bin := w.Bytes()
+			r := bytes.NewReader(bin)
+			dec, err := DeserializeRawTag(id, r)
+			assert.Nil(t, err)
+			assert.Equal(t, v, dec)
+		}
+	}
+
+	bin := append([]byte{0x10, 0x8}, make([]byte, 8)...)
+
+	r := bytes.NewReader(bin[:1])
+	_, err := DeserializeRawTag(0x10, r)
+	assert.ErrorIs(t, err, io.EOF)
+
+	r = bytes.NewReader(bin[:2])
+	_, err = DeserializeRawTag(0x10, r)
+	assert.ErrorIs(t, err, io.EOF)
+
+	r = bytes.NewReader(bin[:9])
+	_, err = DeserializeRawTag(0x10, r)
+	assert.ErrorIs(t, err, io.ErrUnexpectedEOF)
+
+	bin[0]++
+	r = bytes.NewReader(bin)
+	_, err = DeserializeRawTag(0x10, r)
+	assert.ErrorIs(t, err, tags.ErrUnexpectedTagId)
 }

@@ -409,9 +409,12 @@ func DeserializeStdFloat128Tag(reader io.Reader) ([]byte, error) {
 		return nil, err
 	}
 	v := make([]byte, 16)
-	_, err := reader.Read(v)
+	n, err := reader.Read(v)
 	if err != nil {
 		return nil, err
+	}
+	if n != 16 {
+		return nil, io.ErrUnexpectedEOF
 	}
 	return v, nil
 }
@@ -424,9 +427,12 @@ func DeserializeFloat128Tag(tagId tags.TagID, reader io.Reader) ([]byte, error) 
 		return nil, err
 	}
 	v := make([]byte, 16)
-	_, err := reader.Read(v)
+	n, err := reader.Read(v)
 	if err != nil {
 		return nil, err
+	}
+	if n != 16 {
+		return nil, io.ErrUnexpectedEOF
 	}
 	return v, nil
 }
@@ -436,8 +442,8 @@ func DeserializeFloat128Tag(tagId tags.TagID, reader io.Reader) ([]byte, error) 
 /*
 Deserializes a standard ILIntTag
 */
-func DeserializeStdILIntTag(reader io.Reader) (uint64, error) {
-	if err := deserializeTagId(tags.IL_ILINT_TAG_ID, reader); err != nil {
+func deserializeStdILIntTagCore(tagId tags.TagID, reader io.Reader) (uint64, error) {
+	if err := deserializeTagId(tagId, reader); err != nil {
 		return 0, err
 	}
 	if v, _, err := ilint.DecodeFromReader(reader); err != nil {
@@ -445,6 +451,13 @@ func DeserializeStdILIntTag(reader io.Reader) (uint64, error) {
 	} else {
 		return v, nil
 	}
+}
+
+/*
+Deserializes a standard ILIntTag
+*/
+func DeserializeStdILIntTag(reader io.Reader) (uint64, error) {
+	return deserializeStdILIntTagCore(tags.IL_ILINT_TAG_ID, reader)
 }
 
 /*
@@ -459,8 +472,10 @@ func DeserializeILIntTag(tagId tags.TagID, reader io.Reader) (uint64, error) {
 		return 0, tags.ErrBadTagFormat
 	}
 	tmp := make([]byte, int(s))
-	if _, err := reader.Read(tmp); err != nil {
+	if n, err := reader.Read(tmp); err != nil {
 		return 0, err
+	} else if n != len(tmp) {
+		return 0, io.ErrUnexpectedEOF
 	}
 	if v, sr, err := ilint.Decode(tmp); err != nil {
 		return 0, tags.ErrBadTagFormat
@@ -477,38 +492,22 @@ func DeserializeILIntTag(tagId tags.TagID, reader io.Reader) (uint64, error) {
 Deserializes a standard SignedILIntTag
 */
 func DeserializeStdSignedILIntTag(reader io.Reader) (int64, error) {
-	if err := deserializeTagId(tags.IL_SIGNED_ILINT_TAG_ID, reader); err != nil {
+	v, err := deserializeStdILIntTagCore(tags.IL_SIGNED_ILINT_TAG_ID, reader)
+	if err != nil {
 		return 0, err
 	}
-	if v, _, err := ilint.DecodeSignedFromReader(reader); err != nil {
-		return 0, err
-	} else {
-		return v, nil
-	}
+	return ilint.SignedDecode(v), nil
 }
 
 /*
 Deserializes a SignedILIntTag.
 */
 func DeserializeSignedILIntTag(tagId tags.TagID, reader io.Reader) (int64, error) {
-	s, err := deserializeExplicitHeader(tagId, reader)
+	v, err := DeserializeILIntTag(tagId, reader)
 	if err != nil {
 		return 0, err
 	}
-	if s < 1 || s > 9 {
-		return 0, tags.ErrBadTagFormat
-	}
-	tmp := make([]byte, int(s))
-	if _, err := reader.Read(tmp); err != nil {
-		return 0, err
-	}
-	if v, sr, err := ilint.DecodeSigned(tmp); err != nil {
-		return 0, tags.ErrBadTagFormat
-	} else if sr != len(tmp) {
-		return 0, tags.ErrBadTagFormat
-	} else {
-		return v, nil
-	}
+	return ilint.SignedDecode(v), nil
 }
 
 //------------------------------------------------------------------------------
@@ -528,9 +527,14 @@ func DeserializeRawTag(tagId tags.TagID, reader io.Reader) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	if s == 0 {
+		return make([]byte, 0), nil
+	}
 	tmp := make([]byte, int(s))
-	if _, err := reader.Read(tmp); err != nil {
+	if n, err := reader.Read(tmp); err != nil {
 		return nil, err
+	} else if n != len(tmp) {
+		return nil, io.ErrUnexpectedEOF
 	}
 	return tmp, nil
 }
