@@ -40,15 +40,15 @@ func deserializeSmallValueHeader(expectedId tags.TagID, reader io.Reader) (uint6
 Deserializes a small value header and checks if it matches the expected TagID and
 size.
 */
-func deserializeSmallValueHeaderWithSize(expectedId tags.TagID, size int, reader io.Reader) (uint64, error) {
+func deserializeSmallValueHeaderWithSize(expectedId tags.TagID, size int, reader io.Reader) error {
 	s, err := deserializeSmallValueHeader(expectedId, reader)
 	if err != nil {
-		return 0, err
+		return err
 	}
 	if s != uint64(size) {
-		return 0, tags.ErrBadTagFormat
+		return tags.ErrBadTagFormat
 	}
-	return s, nil
+	return nil
 }
 
 /*
