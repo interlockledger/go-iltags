@@ -168,6 +168,19 @@ func TestDeerializeTimestapTag(t *testing.T) {
 	assert.ErrorIs(t, err, tags.ErrUnexpectedTagId)
 }
 
+func TestTimestapTagSize(t *testing.T) {
+	now := time.Now()
+
+	w := bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeTimestapTag(12345, now, w))
+	assert.Equal(t, uint64(len(w.Bytes())), TimestapTagSize(12345, now))
+
+	now = time.UnixMilli(13131312313123123)
+	w = bytes.NewBuffer(nil)
+	assert.Nil(t, SerializeTimestapTag(12345123123, now, w))
+	assert.Equal(t, uint64(len(w.Bytes())), TimestapTagSize(12345123123, now))
+}
+
 //------------------------------------------------------------------------------
 
 func TestTimestampTZPayload(t *testing.T) {

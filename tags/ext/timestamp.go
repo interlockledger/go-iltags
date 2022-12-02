@@ -113,6 +113,13 @@ func DeserializeTimestapTag(tagId tags.TagID, reader io.Reader) (time.Time, erro
 	}
 }
 
+/*
+Returns the size of a TimestampTag with the given tagId and timestamp.
+*/
+func TimestapTagSize(tagId tags.TagID, v time.Time) uint64 {
+	return direct.ExplicitSignedILIntTagSize(tagId, v.UnixMicro())
+}
+
 //------------------------------------------------------------------------------
 
 // Payload of a timestamp with timezone information. This payload does store the
