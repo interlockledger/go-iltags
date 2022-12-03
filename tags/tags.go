@@ -40,6 +40,9 @@ import (
 	"github.com/interlockledger/go-iltags/serialization"
 )
 
+// This is the value of a raw null tag.
+var rawNullTag = []byte{0}
+
 /*
 Maximum tag size that can be handled by this library. It in this version it
 is set to 512MB. This limit may be revised in the future.
@@ -265,7 +268,7 @@ Since 2022.11.28.
 */
 func ILTagSeralizeWithNull(tag ILTag, writer io.Writer) error {
 	if tag == nil {
-		_, err := writer.Write([]byte{0})
+		_, err := writer.Write(rawNullTag)
 		return err
 	} else {
 		return ILTagSeralize(tag, writer)
@@ -329,4 +332,56 @@ func GetExplicitTagSize(id TagID, valueSize uint64) uint64 {
 	return uint64(ilint.EncodedSize(id.UInt64())) +
 		uint64(ilint.EncodedSize(valueSize)) +
 		valueSize
+}
+
+/*
+Serializes one or more tags in sequenct to the given writer. It fails if one of
+the tags cannot be serialized.
+
+If a nil is provided, the given tag will be serialized as a NullTag.
+
+Since 2022.12.03
+*/
+func ILTagSerializeTags(writer io.Writer, tags ...ILTag) error {
+	for _, t := range tags {
+		if err := ILTagSeralizeWithNull(t, writer); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+/*
+Deserializes one or more tags into the provided tags. It fails on the first
+deserialization failure.
+
+Since 2022.12.03
+*/
+func ILTagDeserializeTagInTo(factory ILTagFactory, reader io.Reader, tags ...ILTag) error {
+	for _, t := range tags {
+		if err := ILTagDeserializeInto(factory, reader, t); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+/*
+Deserializes one or more tags into the provided tags. It will set the pointer to
+the tag to nil if it founds a NullTag instead of the expected tag.
+
+It fails on the first deserialization failure.
+
+Since 2022.12.03
+*/
+func ILTagDeserializeTagInToOrNull(factory ILTagFactory, reader io.Reader, tags ...ILTag) ([]bool, error) {
+	nullList := make([]bool, len(tags))
+	for i, t := range tags {
+		isNull, err := ILTagDeserializeIntoOrNull(factory, reader, t)
+		if err != nil {
+			return nil, err
+		}
+		nullList[i] = isNull
+	}
+	return nullList, nil
 }

@@ -38,6 +38,7 @@ import (
 	"testing"
 
 	"github.com/interlockledger/go-iltags/ilint"
+	"github.com/interlockledger/go-iltags/tagtest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -587,4 +588,103 @@ func TestGetExplicitTagSize(t *testing.T) {
 	assert.Equal(t, uint64(9+9+0xFFFF_FFFF_FFFF_FFED),
 		GetExplicitTagSize(0xFFFF_FFFF_FFFF_FFFF,
 			0xFFFF_FFFF_FFFF_FFED))
+}
+
+func TestILTagSerializeTags(t *testing.T) {
+	tag1 := NewRawTag(123)
+	tag1.Payload = []byte{1}
+	tag2 := NewRawTag(456)
+	tag2.Payload = []byte{2}
+
+	w := bytes.NewBuffer(nil)
+	assert.Nil(t, ILTagSerializeTags(w, tag1))
+	assert.Equal(t, []byte{
+		0x7b, 0x1, 0x1}, w.Bytes())
+
+	w = bytes.NewBuffer(nil)
+	assert.Nil(t, ILTagSerializeTags(w, tag1, tag2))
+	assert.Equal(t, []byte{
+		0x7b, 0x1, 0x1,
+		0xf8, 0xd0, 0x1, 0x2}, w.Bytes())
+
+	w = bytes.NewBuffer(nil)
+	assert.Nil(t, ILTagSerializeTags(w, tag1, nil, tag2))
+	assert.Equal(t, []byte{
+		0x7b, 0x1, 0x1,
+		0x0,
+		0xf8, 0xd0, 0x1, 0x2}, w.Bytes())
+
+	wl := tagtest.NewLimitedWriter(2, false)
+	assert.ErrorIs(t, ILTagSerializeTags(wl, tag1, nil, tag2),
+		io.ErrShortWrite)
+}
+
+func TestILTagDeserializeTagInTo(t *testing.T) {
+	tag1 := NewRawTag(123)
+
+	bin := []byte{0x7b, 0x1, 0x1}
+	r := bytes.NewReader(bin)
+	assert.Nil(t, ILTagDeserializeTagInTo(nil, r, tag1))
+	assert.Equal(t, []byte{1}, tag1.Payload)
+
+	tag1 = NewRawTag(123)
+	tag2 := NewRawTag(456)
+	bin = []byte{
+		0x7b, 0x1, 0x1,
+		0xf8, 0xd0, 0x1, 0x2}
+	r = bytes.NewReader(bin)
+	assert.Nil(t, ILTagDeserializeTagInTo(nil, r, tag1, tag2))
+	assert.Equal(t, []byte{1}, tag1.Payload)
+	assert.Equal(t, []byte{2}, tag2.Payload)
+
+	bin = []byte{
+		0x7b, 0x1}
+	r = bytes.NewReader(bin)
+	assert.ErrorIs(t, ILTagDeserializeTagInTo(nil, r, tag1), io.EOF)
+
+	bin = []byte{
+		0x7c, 0x1, 0x01}
+	r = bytes.NewReader(bin)
+	assert.ErrorIs(t, ILTagDeserializeTagInTo(nil, r, tag1), ErrUnexpectedTagId)
+}
+
+func TestILTagDeserializeTagInToOrNull(t *testing.T) {
+	tag1 := NewRawTag(123)
+
+	bin := []byte{0x7b, 0x1, 0x1}
+	r := bytes.NewReader(bin)
+	nl, err := ILTagDeserializeTagInToOrNull(nil, r, tag1)
+	assert.Nil(t, err)
+	assert.Equal(t, []bool{false}, nl)
+	assert.Equal(t, []byte{1}, tag1.Payload)
+
+	tag1 = NewRawTag(123)
+	tag2 := NewRawTag(456)
+	bin = []byte{
+		0x7b, 0x1, 0x1,
+		0xf8, 0xd0, 0x1, 0x2}
+	r = bytes.NewReader(bin)
+	nl, err = ILTagDeserializeTagInToOrNull(nil, r, tag1, tag2)
+	assert.Nil(t, err)
+	assert.Equal(t, []bool{false, false}, nl)
+	assert.Equal(t, []byte{1}, tag1.Payload)
+	assert.Equal(t, []byte{2}, tag2.Payload)
+
+	tag1 = NewRawTag(123)
+	tag2 = NewRawTag(456)
+	bin = []byte{
+		0x7b, 0x1, 0x1,
+		0x0}
+	r = bytes.NewReader(bin)
+	nl, err = ILTagDeserializeTagInToOrNull(nil, r, tag1, tag2)
+	assert.Nil(t, err)
+	assert.Equal(t, []bool{false, true}, nl)
+	assert.Equal(t, []byte{1}, tag1.Payload)
+	assert.Nil(t, tag2.Payload)
+
+	bin = []byte{
+		0x7c, 0x1, 0x01}
+	r = bytes.NewReader(bin)
+	_, err = ILTagDeserializeTagInToOrNull(nil, r, tag1)
+	assert.ErrorIs(t, err, ErrUnexpectedTagId)
 }
