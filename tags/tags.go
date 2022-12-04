@@ -360,7 +360,7 @@ deserialization failure.
 
 Since 2022.12.03
 */
-func ILTagDeserializeTagInTo(factory ILTagFactory, reader io.Reader, tags ...ILTag) error {
+func ILTagDeserializeTagsInto(factory ILTagFactory, reader io.Reader, tags ...ILTag) error {
 	for _, t := range tags {
 		if err := ILTagDeserializeInto(factory, reader, t); err != nil {
 			return err
@@ -377,7 +377,7 @@ It fails on the first deserialization failure.
 
 Since 2022.12.03
 */
-func ILTagDeserializeTagInToOrNull(factory ILTagFactory, reader io.Reader, tags ...ILTag) ([]bool, error) {
+func ILTagDeserializeTagsIntoOrNull(factory ILTagFactory, reader io.Reader, tags ...ILTag) ([]bool, error) {
 	nullList := make([]bool, len(tags))
 	for i, t := range tags {
 		isNull, err := ILTagDeserializeIntoOrNull(factory, reader, t)

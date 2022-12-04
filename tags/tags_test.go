@@ -643,12 +643,12 @@ func TestILTagSerializeTags(t *testing.T) {
 		io.ErrShortWrite)
 }
 
-func TestILTagDeserializeTagInTo(t *testing.T) {
+func TestILTagDeserializeTagsInto(t *testing.T) {
 	tag1 := NewRawTag(123)
 
 	bin := []byte{0x7b, 0x1, 0x1}
 	r := bytes.NewReader(bin)
-	assert.Nil(t, ILTagDeserializeTagInTo(nil, r, tag1))
+	assert.Nil(t, ILTagDeserializeTagsInto(nil, r, tag1))
 	assert.Equal(t, []byte{1}, tag1.Payload)
 
 	tag1 = NewRawTag(123)
@@ -657,27 +657,27 @@ func TestILTagDeserializeTagInTo(t *testing.T) {
 		0x7b, 0x1, 0x1,
 		0xf8, 0xd0, 0x1, 0x2}
 	r = bytes.NewReader(bin)
-	assert.Nil(t, ILTagDeserializeTagInTo(nil, r, tag1, tag2))
+	assert.Nil(t, ILTagDeserializeTagsInto(nil, r, tag1, tag2))
 	assert.Equal(t, []byte{1}, tag1.Payload)
 	assert.Equal(t, []byte{2}, tag2.Payload)
 
 	bin = []byte{
 		0x7b, 0x1}
 	r = bytes.NewReader(bin)
-	assert.ErrorIs(t, ILTagDeserializeTagInTo(nil, r, tag1), io.EOF)
+	assert.ErrorIs(t, ILTagDeserializeTagsInto(nil, r, tag1), io.EOF)
 
 	bin = []byte{
 		0x7c, 0x1, 0x01}
 	r = bytes.NewReader(bin)
-	assert.ErrorIs(t, ILTagDeserializeTagInTo(nil, r, tag1), ErrUnexpectedTagId)
+	assert.ErrorIs(t, ILTagDeserializeTagsInto(nil, r, tag1), ErrUnexpectedTagId)
 }
 
-func TestILTagDeserializeTagInToOrNull(t *testing.T) {
+func TestILTagDeserializeTagsIntoOrNull(t *testing.T) {
 	tag1 := NewRawTag(123)
 
 	bin := []byte{0x7b, 0x1, 0x1}
 	r := bytes.NewReader(bin)
-	nl, err := ILTagDeserializeTagInToOrNull(nil, r, tag1)
+	nl, err := ILTagDeserializeTagsIntoOrNull(nil, r, tag1)
 	assert.Nil(t, err)
 	assert.Equal(t, []bool{false}, nl)
 	assert.Equal(t, []byte{1}, tag1.Payload)
@@ -688,7 +688,7 @@ func TestILTagDeserializeTagInToOrNull(t *testing.T) {
 		0x7b, 0x1, 0x1,
 		0xf8, 0xd0, 0x1, 0x2}
 	r = bytes.NewReader(bin)
-	nl, err = ILTagDeserializeTagInToOrNull(nil, r, tag1, tag2)
+	nl, err = ILTagDeserializeTagsIntoOrNull(nil, r, tag1, tag2)
 	assert.Nil(t, err)
 	assert.Equal(t, []bool{false, false}, nl)
 	assert.Equal(t, []byte{1}, tag1.Payload)
@@ -700,7 +700,7 @@ func TestILTagDeserializeTagInToOrNull(t *testing.T) {
 		0x7b, 0x1, 0x1,
 		0x0}
 	r = bytes.NewReader(bin)
-	nl, err = ILTagDeserializeTagInToOrNull(nil, r, tag1, tag2)
+	nl, err = ILTagDeserializeTagsIntoOrNull(nil, r, tag1, tag2)
 	assert.Nil(t, err)
 	assert.Equal(t, []bool{false, true}, nl)
 	assert.Equal(t, []byte{1}, tag1.Payload)
@@ -709,7 +709,7 @@ func TestILTagDeserializeTagInToOrNull(t *testing.T) {
 	bin = []byte{
 		0x7c, 0x1, 0x01}
 	r = bytes.NewReader(bin)
-	_, err = ILTagDeserializeTagInToOrNull(nil, r, tag1)
+	_, err = ILTagDeserializeTagsIntoOrNull(nil, r, tag1)
 	assert.ErrorIs(t, err, ErrUnexpectedTagId)
 }
 

@@ -84,10 +84,10 @@ func TestSampleWrappedTag(t *testing.T) {
 	assert.Equal(t, exp, w.Bytes())
 
 	r := bytes.NewReader(exp)
-	assert.Nil(t, tags.ILTagDeserializeTagInTo(nil, r, tag))
+	assert.Nil(t, tags.ILTagDeserializeTagsInto(nil, r, tag))
 	assert.Equal(t, *v1, *tag.Value)
 	assert.NotSame(t, v1, tag.Value)
 
 	r = bytes.NewReader(exp[1:])
-	assert.Error(t, tags.ILTagDeserializeTagInTo(nil, r, tag))
+	assert.Error(t, tags.ILTagDeserializeTagsInto(nil, r, tag))
 }

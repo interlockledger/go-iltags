@@ -168,7 +168,7 @@ func DeserializeWrappedValueTags[V any](factory tags.ILTagFactory, tag WrappedVa
 	r := &io.LimitedReader{N: int64(size), R: reader}
 	l := make([]*V, 0)
 	for r.N > 0 {
-		if err := tags.ILTagDeserializeTagInTo(factory, r, tag); err != nil {
+		if err := tags.ILTagDeserializeTagsInto(factory, r, tag); err != nil {
 			return nil, err
 		}
 		l = append(l, tag.Wrapped())
