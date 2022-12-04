@@ -340,6 +340,9 @@ the tags cannot be serialized.
 
 If a nil is provided, the given tag will be serialized as a NullTag.
 
+The total number of bytes written can be precomputed by using the function
+ILTagSequenceSize().
+
 Since 2022.12.03
 */
 func ILTagSerializeTags(writer io.Writer, tags ...ILTag) error {
@@ -384,4 +387,23 @@ func ILTagDeserializeTagInToOrNull(factory ILTagFactory, reader io.Reader, tags 
 		nullList[i] = isNull
 	}
 	return nullList, nil
+}
+
+/*
+Computes the total size of the given sequence of tags. It returns the sum of the
+size of all tags passed to it. If a given entry is nil, a NullTag will be
+considered instead.
+
+This function returns the number of bytes that will be written by
+ILTagSerializeTags() with the same parameter.
+*/
+func ILTagSequenceSize(tags ...ILTag) (size uint64) {
+	for _, t := range tags {
+		if t != nil {
+			size += ILTagSize(t)
+		} else {
+			size++
+		}
+	}
+	return
 }

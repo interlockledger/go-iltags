@@ -712,3 +712,16 @@ func TestILTagDeserializeTagInToOrNull(t *testing.T) {
 	_, err = ILTagDeserializeTagInToOrNull(nil, r, tag1)
 	assert.ErrorIs(t, err, ErrUnexpectedTagId)
 }
+
+func TestILTagSequenceSize(t *testing.T) {
+	tag1 := NewRawTag(123)
+	tag1.Payload = make([]byte, 5)
+	tag2 := NewRawTag(123)
+	tag2.Payload = make([]byte, 10)
+
+	assert.Equal(t, uint64(0), ILTagSequenceSize())
+
+	assert.Equal(t, uint64(7), ILTagSequenceSize(tag1))
+	assert.Equal(t, uint64(7+12), ILTagSequenceSize(tag1, tag2))
+	assert.Equal(t, uint64(7+1+12), ILTagSequenceSize(tag1, nil, tag2))
+}
