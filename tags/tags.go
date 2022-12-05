@@ -392,18 +392,18 @@ func ILTagDeserializeTagsIntoOrNull(factory ILTagFactory, reader io.Reader, tags
 
 /*
 Computes the total size of the given sequence of tags. It returns the sum of the
-size of all tags passed to it. If a given entry is nil, a NullTag will be
-considered instead.
+size of all tags passed to it. If a given entry is nil or has a nil value, a
+NullTag will be considered instead.
 
 This function returns the number of bytes that will be written by
 ILTagSerializeTags() with the same parameter.
 */
 func ILTagSequenceSize(tags ...ILTag) (size uint64) {
 	for _, t := range tags {
-		if t != nil {
-			size += ILTagSize(t)
-		} else {
+		if IsILTagNil(t) {
 			size++
+		} else {
+			size += ILTagSize(t)
 		}
 	}
 	return

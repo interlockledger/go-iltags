@@ -733,6 +733,9 @@ func TestILTagSequenceSize(t *testing.T) {
 	assert.Equal(t, uint64(7), ILTagSequenceSize(tag1))
 	assert.Equal(t, uint64(7+12), ILTagSequenceSize(tag1, tag2))
 	assert.Equal(t, uint64(7+1+12), ILTagSequenceSize(tag1, nil, tag2))
+
+	var tag3 *RawTag = nil
+	assert.Equal(t, uint64(7+1+12), ILTagSequenceSize(tag1, tag3, tag2))
 }
 
 func TestIsILTagNil(t *testing.T) {
