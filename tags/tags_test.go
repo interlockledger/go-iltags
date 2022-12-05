@@ -560,19 +560,19 @@ func TestILTagDeserializeIntoOrNull(t *testing.T) {
 	assert.False(t, nullTag)
 }
 
-func TestComputeagHeaderSize(t *testing.T) {
+func TestComputeHeaderSize(t *testing.T) {
 
 	tag := &RawTag{
 		ILTagHeaderImpl: ILTagHeaderImpl{15},
 		RawPayload:      RawPayload{},
 	}
-	assert.Equal(t, uint64(1), ComputeagHeaderSize(tag))
+	assert.Equal(t, uint64(1), ComputeHeaderSize(tag))
 
 	tag = &RawTag{
 		ILTagHeaderImpl: ILTagHeaderImpl{16},
 		RawPayload:      RawPayload{},
 	}
-	assert.Equal(t, uint64(2), ComputeagHeaderSize(tag))
+	assert.Equal(t, uint64(2), ComputeHeaderSize(tag))
 
 	tag = &RawTag{
 		ILTagHeaderImpl: ILTagHeaderImpl{0x1234},
@@ -581,7 +581,7 @@ func TestComputeagHeaderSize(t *testing.T) {
 	assert.Equal(t, uint64(
 		ilint.EncodedSize(uint64(0x1234))+
 			ilint.EncodedSize(uint64(256))),
-		ComputeagHeaderSize(tag))
+		ComputeHeaderSize(tag))
 }
 
 func TestGetExplicitTagSize(t *testing.T) {

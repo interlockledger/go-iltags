@@ -312,13 +312,20 @@ func ILTagDeserializeIntoOrNull(factory ILTagFactory, reader io.Reader,
 /*
 Returns the size of the header of the tag.
 */
-func ComputeagHeaderSize(tag ILTag) uint64 {
+func ComputeHeaderSize(tag ILTag) uint64 {
 	size := uint64(ilint.EncodedSize(tag.Id().UInt64()))
 	if !tag.Id().Implicit() {
 		size += uint64(ilint.EncodedSize(tag.ValueSize()))
 	}
 	return size
 }
+
+/*
+Returns the size of the header of the tag. This function has been deprecated in
+favor of ComputeHeaderSize() because its name is incorrect. It will be removed
+soon.
+*/
+var ComputeagHeaderSize = ComputeHeaderSize
 
 /*
 Returns the total size of an explicit tag based on its ID and payload size.
