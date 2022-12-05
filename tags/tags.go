@@ -35,6 +35,7 @@ package tags
 import (
 	"bytes"
 	"io"
+	"reflect"
 
 	"github.com/interlockledger/go-iltags/ilint"
 	"github.com/interlockledger/go-iltags/serialization"
@@ -262,12 +263,12 @@ func ILTagFromBytes(factory ILTagFactory, b []byte) (ILTag, error) {
 
 /*
 This is a helper function that serialized the given tag into the writer or add a
-ILNullTag is tag is nil.
+ILNullTag is tag is nil or points to a nil value.
 
 Since 2022.11.28.
 */
 func ILTagSeralizeWithNull(tag ILTag, writer io.Writer) error {
-	if tag == nil {
+	if IsILTagNil(tag) {
 		_, err := writer.Write(rawNullTag)
 		return err
 	} else {
@@ -406,4 +407,26 @@ func ILTagSequenceSize(tags ...ILTag) (size uint64) {
 		}
 	}
 	return
+}
+
+/*
+Returns true if the provided tag is nil or points to a nil value. It is a
+workaround to the fact that in Go, comparing an interface with untyped nil may
+not be enough as the interface may be nil or have a type that points to a nil
+value.
+*/
+func IsILTagNil(tag ILTag) bool {
+	// Implementation based on the suggestions found at
+	// https://stackoverflow.com/questions/13476349/check-for-nil-and-nil-interface-in-go
+	// and the documentation of reflect.Value.Kind()
+	if tag == nil {
+		return true
+	}
+	v := reflect.ValueOf(tag)
+	switch v.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Pointer, reflect.Slice:
+		return v.IsNil()
+	default:
+		return false
+	}
 }

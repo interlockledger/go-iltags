@@ -638,6 +638,15 @@ func TestILTagSerializeTags(t *testing.T) {
 		0x0,
 		0xf8, 0xd0, 0x1, 0x2}, w.Bytes())
 
+	// Special case reported at https://github.com/interlockledger/go-iltags/issues/18
+	var tag3 *RawTag = nil
+	w = bytes.NewBuffer(nil)
+	assert.Nil(t, ILTagSerializeTags(w, tag1, tag3, tag2))
+	assert.Equal(t, []byte{
+		0x7b, 0x1, 0x1,
+		0x0,
+		0xf8, 0xd0, 0x1, 0x2}, w.Bytes())
+
 	wl := tagtest.NewLimitedWriter(2, false)
 	assert.ErrorIs(t, ILTagSerializeTags(wl, tag1, nil, tag2),
 		io.ErrShortWrite)
@@ -724,4 +733,13 @@ func TestILTagSequenceSize(t *testing.T) {
 	assert.Equal(t, uint64(7), ILTagSequenceSize(tag1))
 	assert.Equal(t, uint64(7+12), ILTagSequenceSize(tag1, tag2))
 	assert.Equal(t, uint64(7+1+12), ILTagSequenceSize(tag1, nil, tag2))
+}
+
+func TestIsILTagNil(t *testing.T) {
+	var tag *RawTag
+
+	assert.True(t, IsILTagNil(nil))
+	assert.True(t, IsILTagNil(tag))
+	tag = NewRawTag(1234)
+	assert.False(t, IsILTagNil(tag))
 }
