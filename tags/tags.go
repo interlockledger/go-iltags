@@ -321,13 +321,6 @@ func ComputeHeaderSize(tag ILTag) uint64 {
 }
 
 /*
-Returns the size of the header of the tag. This function has been deprecated in
-favor of ComputeHeaderSize() because its name is incorrect. It will be removed
-soon.
-*/
-var ComputeagHeaderSize = ComputeHeaderSize
-
-/*
 Returns the total size of an explicit tag based on its ID and payload size.
 
 The result of this function is meaningless if the given tag ID is not assigned
